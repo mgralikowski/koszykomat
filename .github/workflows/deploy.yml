@@ -1,0 +1,89 @@
+# Build, test and deploy to the DirectAdmin VPS via rsync + symlink-swap releases.
+# Server-side activation logic lives in deploy/release.sh; one-time server setup
+# in deploy/SERVER-SETUP.md. Plan: context/deployment/deploy-plan.md.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # --- Quality gate: nothing touches the server unless lint + tests pass ---
+      - name: Install dependencies (with dev)
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Lint
+        run: composer lint
+
+      - name: Test
+        run: composer test
+
+      # --- Build the release artifact ---
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Reinstall dependencies (production only)
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-progress --no-interaction
+
+      - name: Stamp revision
+        run: echo "$GITHUB_SHA" > REVISION
+
+      # --- Ship it ---
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync release
+        run: |
+          RELEASE="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA:0:7}"
+          echo "RELEASE=$RELEASE" >> "$GITHUB_ENV"
+          rsync -az --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env' \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/releases/$RELEASE/"
+
+      - name: Activate release (migrate → cache → symlink swap)
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "bash '${{ secrets.DEPLOY_PATH }}/releases/$RELEASE/deploy/release.sh'"
+
+      # --- Verify: the live site must serve exactly this commit (opcache guard) ---
+      - name: Verify deployment
+        run: |
+          sleep 5
+          curl -fsS https://koszykomat.pl/up > /dev/null
+          DEPLOYED="$(curl -fsS https://koszykomat.pl/_version)"
+          if [ "$DEPLOYED" != "$GITHUB_SHA" ]; then
+            echo "::error::Version mismatch: live=$DEPLOYED expected=$GITHUB_SHA (stale opcache or failed swap)"
+            exit 1
+          fi
+          echo "Deployed $GITHUB_SHA successfully."
