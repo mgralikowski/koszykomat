@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project
 
 Koszykomat — price-comparison web app for Polish supermarket chains (Lidl vs Biedronka). Laravel 13, PHP 8.3, MySQL 5.7, Tailwind CSS 4 + Vite 8, Blade views. Solo MVP project.
@@ -40,7 +38,7 @@ App URL: https://koszykomat.ddev.site
 
 ## Conventions
 
-- Testing: optional during MVP — but cover tricky logic (especially promo price calculations: 1+1, "second for 1 PLN", loyalty-card prices) with PHPUnit tests. Tests use in-memory SQLite.
+- Testing: optional during MVP — except the four promo mechanics (simple promo price, 1+1 gratis, second for 1 PLN/grosz, loyalty-card price): each must have a PHPUnit test asserting the computed basket total. Tests use in-memory SQLite.
 - Git: solo project, small commits straight to `main`, conventional-commit style messages.
 - Auth per PRD is OAuth-only (no email+password) — Laravel Socialite is planned but not yet installed.
 
