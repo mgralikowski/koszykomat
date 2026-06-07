@@ -53,27 +53,33 @@ jobs:
       # --- Ship it ---
       - name: Set up SSH
         run: |
+          PORT="${{ secrets.DEPLOY_PORT }}"
+          echo "DEPLOY_PORT=${PORT:-22}" >> "$GITHUB_ENV"
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -p "${PORT:-22}" -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Rsync release
         run: |
           RELEASE="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA:0:7}"
           echo "RELEASE=$RELEASE" >> "$GITHUB_ENV"
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "mkdir -p '${{ secrets.DEPLOY_PATH }}/releases/$RELEASE'"
           rsync -az --delete \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='node_modules' \
             --exclude='tests' \
             --exclude='.env' \
-            -e "ssh -i ~/.ssh/deploy_key" \
+            -e "ssh -i ~/.ssh/deploy_key -p $DEPLOY_PORT" \
             ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/releases/$RELEASE/"
 
       - name: Activate release (migrate → cache → symlink swap)
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "bash '${{ secrets.DEPLOY_PATH }}/releases/$RELEASE/deploy/release.sh'"
 
       # --- Verify: the live site must serve exactly this commit (opcache guard) ---

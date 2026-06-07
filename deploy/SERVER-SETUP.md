@@ -125,6 +125,7 @@ Repo → Settings → Secrets and variables → Actions:
 | `DEPLOY_HOST` | `46.29.21.135` (the IP — Cloudflare proxy does not pass SSH) |
 | `DEPLOY_USER` | `<da-user>` |
 | `DEPLOY_PATH` | `/home/<da-user>/domains/koszykomat.pl` |
+| `DEPLOY_PORT` | SSH port of the VPS (omit if standard 22) |
 
 ## 9. TLS + Cloudflare
 
