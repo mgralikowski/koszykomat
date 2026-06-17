@@ -45,20 +45,43 @@ vi $BASE/shared/.env   # fill DB_DATABASE / DB_USERNAME / DB_PASSWORD from step 
 The script creates `releases/`, `shared/storage/`, and a `shared/.env` template with a
 generated `APP_KEY` (never overwrites an existing `.env`).
 
-## 4. Docroot → `current/public`
+## 4. Docroot → `current/public` (Apache, DocumentRoot token)
 
-DirectAdmin serves `public_html` (HTTP) and `private_html` (HTTPS). Point both at the
-live release:
+This server runs **Apache + PHP-FPM** (no nginx). Point the docroot at the release's
+`public/` natively, via DirectAdmin's `DOCROOT` token override — it survives panel
+rebuilds and covers both the HTTP and HTTPS vhosts at once. As `ebizo`:
 
-```bash
-cd $BASE
-rm -rf public_html private_html        # fresh domain — only the DA placeholder inside
-ln -sfn ./current/public public_html
-ln -sfn ./public_html private_html
-```
+**Account Manager → Domain Setup → koszykomat.pl → Customize configuration →
+`httpd.conf`**, then:
 
-> Check first that `public_html` contains nothing but the DirectAdmin placeholder before
-> removing it. (`current` will dangle until the first successful deploy — that's fine.)
+- **CUSTOM1** (appears before the variables are set):
+
+  ```
+  |?DOCROOT=`HOME`/domains/`DOMAIN`/current/public|
+  ```
+
+- **CUSTOM4** (the very last entry) — Apache must read Laravel's `public/.htaccess`
+  (front-controller rewrite, or `/up` 404s) and follow the `current` symlink:
+
+  ```apache
+  <Directory "/home/ebizo/domains/koszykomat.pl/current/public">
+      AllowOverride All
+      Options +SymLinksIfOwnerMatch
+      Require all granted
+  </Directory>
+  ```
+
+Save → DirectAdmin rewrites the vhosts and reloads Apache. Confirm both vhosts now show
+`DocumentRoot ".../current/public"` and that the extra `<Directory>` block is present.
+
+> Why not a `public_html → current/public` symlink? It works on a pure-nginx box, but
+> DirectAdmin can regenerate `public_html` on account operations, and the token override is
+> panel-native (survives rebuilds). Use the symlink **only** as a fallback if `DOCROOT`
+> token overrides are unavailable:
+> ```bash
+> cd $BASE && rm -rf public_html private_html
+> ln -sfn ./current/public public_html && ln -sfn ./public_html private_html
+> ```
 
 ## 5. Opcache strategy (root, one-time — pick ONE)
 
