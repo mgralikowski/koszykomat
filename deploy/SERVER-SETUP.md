@@ -1,26 +1,23 @@
 # Server setup checklist — koszykomat.pl
 
-One-time setup for the DirectAdmin VPS (46.29.21.135) + Supabase + Cloudflare + GitHub Actions
-pipeline. Companion to `deploy/setup-server.sh` (run that first) and
+One-time setup for the DirectAdmin VPS (46.29.21.135, with MySQL 8.0) + Cloudflare + GitHub
+Actions pipeline. Companion to `deploy/setup-server.sh` (run that first) and
 `context/deployment/deploy-plan.md` (the approved plan this implements).
 
 Conventions below: `<da-user>` = the DirectAdmin account owning koszykomat.pl;
 `$BASE` = `/home/<da-user>/domains/koszykomat.pl`.
 
-## 1. Supabase project (dashboard, human-only)
+## 1. MySQL database (DirectAdmin, human-only)
 
-1. Create a project: region **Frankfurt (`eu-central-1`)**, free tier.
-2. From **Connect → Connection pooling**, note BOTH connection variants:
-   - **Transaction pooler** — port **6543** → `.env` `DB_PORT` (web requests).
-   - **Session pooler** — port **5432** → `.env` `DB_SESSION_PORT` (migrations, long jobs).
-   - Host must be the pooler host (`aws-0-eu-central-1.pooler.supabase.com`);
-     username looks like `postgres.<project-ref>`.
-3. Fill `DB_USERNAME` / `DB_PASSWORD` in `$BASE/shared/.env`.
+1. DirectAdmin → **Account Manager → MySQL Management → Create new Database**.
+2. Create the database and a dedicated user (DirectAdmin prefixes both with the account
+   name, e.g. `<da-user>_koszykomat`). Use a strong generated password.
+3. Fill `DB_DATABASE` / `DB_USERNAME` / `DB_PASSWORD` in `$BASE/shared/.env` (host stays
+   `127.0.0.1`, port `3306` — the DB is local to this VPS).
 
-> ⚠️ **Free-tier pause rule**: 7 days without database queries → project is paused and the
-> app is fully down until you click *Restore* in the dashboard. The nightly ingestion cron
-> (added with feature work) doubles as the heartbeat — its failure alerting must be loud.
-> Unpause runbook: dashboard → project → Restore (~30 s).
+> ⚠️ **Backups are now your responsibility** — there is no managed-database safety net.
+> Enable DirectAdmin's backup feature for this account, or add a `mysqldump` cron, before
+> the app holds any data you care about. A server failure with no backup loses everything.
 
 ## 2. SSH for the deploy user (DirectAdmin + shell)
 
@@ -42,7 +39,7 @@ Conventions below: `<da-user>` = the DirectAdmin account owning koszykomat.pl;
 ssh <da-user>@46.29.21.135
 bash <(curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/deploy/setup-server.sh)
 # or: scp deploy/setup-server.sh to the server and run it
-vi $BASE/shared/.env   # fill Supabase DB_USERNAME / DB_PASSWORD
+vi $BASE/shared/.env   # fill DB_DATABASE / DB_USERNAME / DB_PASSWORD from step 1
 ```
 
 The script creates `releases/`, `shared/storage/`, and a `shared/.env` template with a
@@ -86,21 +83,21 @@ echo "action=rewrite&value=httpd" >> /usr/local/directadmin/data/task.queue
 
 ```
 # /etc/sudoers.d/koszykomat-deploy
-<da-user> ALL=(root) NOPASSWD: /usr/bin/systemctl reload php-fpm83
+<da-user> ALL=(root) NOPASSWD: /usr/bin/systemctl reload php-fpm85
 ```
 
 and set `OPCACHE_STRATEGY=fpm-reload` (workflow env or `authorized_keys` `environment=`).
 Verify the exact FPM service name first: `systemctl list-units 'php*'`.
 
-## 6. Outbound connectivity check (VPS → Supabase)
+## 6. Database connectivity check (local MySQL)
 
 ```bash
-# From the VPS — both pooler ports must be reachable outbound:
-timeout 5 bash -c 'cat < /dev/null > /dev/tcp/aws-0-eu-central-1.pooler.supabase.com/6543' && echo "6543 OK"
-timeout 5 bash -c 'cat < /dev/null > /dev/tcp/aws-0-eu-central-1.pooler.supabase.com/5432' && echo "5432 OK"
+# From the VPS — confirm the app can reach the local MySQL with the .env credentials:
+mysql -h 127.0.0.1 -P 3306 -u '<da-user>_koszykomat' -p '<da-user>_koszykomat' -e 'SELECT VERSION();'
 ```
 
-If blocked: open outbound TCP 5432 + 6543 in the server firewall (CSF/iptables).
+Should print `8.0.x`. The DB is local, so no firewall change is needed; if it fails, the
+DB/user/password from step 1 are wrong or the user lacks privileges on that database.
 
 ## 7. Cron (DirectAdmin's own cron UI — survives panel rebuilds)
 
@@ -108,10 +105,10 @@ DirectAdmin → User Level → **Cron Jobs** → add (single entry, `flock`-guar
 risk register):
 
 ```
-* * * * * flock -n /tmp/koszykomat-sched.lock /usr/local/php83/bin/php /home/<da-user>/domains/koszykomat.pl/current/artisan schedule:run >> /dev/null 2>&1
+* * * * * flock -n /tmp/koszykomat-sched.lock /usr/local/php85/bin/php /home/<da-user>/domains/koszykomat.pl/current/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Verify the PHP CLI path first: `ls /usr/local/php83/bin/php` (adjust if the server names
+Verify the PHP CLI path first: `ls /usr/local/php85/bin/php` (adjust if the server names
 it differently). The scheduler is empty until feature work adds the nightly ingestion —
 the entry is wired now so the pipe is live.
 
@@ -163,5 +160,7 @@ exempt the deploy user or relax the SSH jail before the first deploy "flakes".
 ## 12. Recommended follow-up (not blocking)
 
 - Free uptime monitor (e.g. UptimeRobot) on `https://koszykomat.pl/up`.
-- When the nightly ingestion lands: scheduler `emailOutputOnFailure` + heartbeat row, so a
-  dead cron cannot silently count down to the Supabase free-tier pause.
+- **Database backups** (not optional): enable DirectAdmin account backups or a nightly
+  `mysqldump` to off-server storage — the DB lives on the VPS with no managed snapshots.
+- When the nightly ingestion lands: scheduler `emailOutputOnFailure` so a dead refresh cron
+  surfaces loudly instead of silently serving stale prices.

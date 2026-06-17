@@ -2,7 +2,7 @@
 
 ## Project
 
-Koszykomat — price-comparison web app for Polish supermarket chains (Lidl vs Biedronka). Laravel 13, PHP 8.3, PostgreSQL 17 (Supabase in production), Tailwind CSS 4 + Vite 8, Blade views. Solo MVP project.
+Koszykomat — price-comparison web app for Polish supermarket chains (Lidl vs Biedronka). Laravel 13, PHP 8.5, MySQL 8.0, Tailwind CSS 4 + Vite 8, Blade views. Solo MVP project.
 
 Product and stack decisions live in `context/foundation/`:
 - Requirements: @context/foundation/prd.md
@@ -13,7 +13,7 @@ Product and stack decisions live in `context/foundation/`:
 All PHP, Composer, npm, and artisan commands run inside ddev containers. Never run PHP on the host.
 
 ```bash
-ddev start                      # start containers (nginx-fpm, PHP 8.3, PostgreSQL 17)
+ddev start                      # start containers (nginx-fpm, PHP 8.5, MySQL 8.0)
 ddev artisan migrate            # any artisan command
 ddev composer test              # run tests (clears config, then phpunit)
 ddev artisan test tests/Feature/SomeTest.php   # single test file
@@ -27,9 +27,9 @@ App URL: https://koszykomat.ddev.site
 
 ## Hard constraints
 
-- **PostgreSQL 17** — production database is Supabase (managed Postgres, Frankfurt, free tier); local ddev runs the same major version. The DB is remote in production (~20–30 ms RTT per query) — eager-load relations and avoid N+1 so basket comparison stays within the <2 s budget.
-- **PHP 8.3** — composer platform is pinned; don't require packages needing newer PHP.
-- Production compute is a classic DirectAdmin VPS (nginx + PHP-FPM + cron), not containerized — ddev is local-only. The database is external (Supabase), not on the VPS.
+- **MySQL 8.0** — production database is MySQL 8.0 on the DirectAdmin VPS, created via the DirectAdmin panel; local ddev runs the same major version. The DB is local to the app server (no remote RTT), but still eager-load relations and avoid N+1 so basket comparison stays within the <2 s budget.
+- **PHP 8.5** — `composer.json` requires `php ^8.5`, matching the server, ddev, and CI; don't require packages needing newer PHP.
+- Production compute and database are both on a classic DirectAdmin VPS (nginx + PHP-FPM + MySQL + cron), not containerized — ddev is local-only.
 
 ## Language
 
@@ -45,8 +45,8 @@ App URL: https://koszykomat.ddev.site
 ## Gotchas
 
 - Tailwind v4 is wired through the Vite plugin (`@tailwindcss/vite`), not PostCSS — no `tailwind.config.js`; theme customization goes in `resources/css/app.css` via `@theme`.
-- Supabase production connections go through the Supavisor **transaction pooler (port 6543)** for web requests; migrations and long-running jobs (nightly ingestion) must use the **session pooler (port 5432)** via the dedicated `pgsql_session` connection (`config/database.php`), e.g. `php artisan migrate --database=pgsql_session`.
-- Supabase free tier **pauses the project after 7 days without database activity** (manual unpause via dashboard). The nightly ingestion doubles as the heartbeat — its failure alerting must be loud, or a dead cron silently takes the whole app down a week later.
+- The production MySQL database lives on the VPS itself — there are **no managed backups**. Schedule backups yourself (DirectAdmin's backup feature or a `mysqldump` cron), or a server failure loses all price/basket data.
+- Use `utf8mb4` (already the default in `config/database.php`) for all tables — Polish product names and promo descriptions contain characters that the legacy `utf8` (3-byte) charset cannot store.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 

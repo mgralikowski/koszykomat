@@ -14,14 +14,14 @@
 set -euo pipefail
 
 # --- Configuration (override via environment) --------------------------------
-PHP_BIN="${PHP_BIN:-/usr/local/php83/bin/php}"
+PHP_BIN="${PHP_BIN:-/usr/local/php85/bin/php}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
 # Opcache strategy after the symlink swap:
 #   realpath   — nginx passes $realpath_root to FastCGI (custom DA template);
 #                nothing to do per deploy. Preferred.
 #   fpm-reload — run $FPM_RELOAD_CMD (requires a sudoers entry for the deploy user).
 OPCACHE_STRATEGY="${OPCACHE_STRATEGY:-realpath}"
-FPM_RELOAD_CMD="${FPM_RELOAD_CMD:-sudo /usr/bin/systemctl reload php-fpm83}"
+FPM_RELOAD_CMD="${FPM_RELOAD_CMD:-sudo /usr/bin/systemctl reload php-fpm85}"
 # ------------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,8 +41,8 @@ rm -rf storage
 ln -sfn "$BASE_DIR/shared/storage" storage
 mkdir -p bootstrap/cache
 
-echo "==> Running migrations (session pooler — pgsql_session)"
-"$PHP_BIN" artisan migrate --force --database=pgsql_session
+echo "==> Running migrations"
+"$PHP_BIN" artisan migrate --force
 
 echo "==> Caching config/routes/views"
 "$PHP_BIN" artisan config:cache

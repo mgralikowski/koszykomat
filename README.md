@@ -12,11 +12,11 @@ Full product and stack decisions live in [`context/foundation/prd.md`](context/f
 
 ## Tech stack
 
-- **Backend:** Laravel 13, PHP 8.3
-- **Database:** PostgreSQL 17 — [Supabase](https://supabase.com/) in production (managed Postgres, Frankfurt)
+- **Backend:** Laravel 13, PHP 8.5
+- **Database:** MySQL 8.0 (on the DirectAdmin VPS in production)
 - **Frontend:** Blade views, Tailwind CSS 4 + Vite 8
 - **Auth:** OAuth-only via Laravel Socialite (planned, no email+password)
-- **Local environment:** [ddev](https://ddev.readthedocs.io/) (nginx-fpm, PHP 8.3, PostgreSQL 17)
+- **Local environment:** [ddev](https://ddev.readthedocs.io/) (nginx-fpm, PHP 8.5, MySQL 8.0)
 
 ## Requirements
 

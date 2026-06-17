@@ -1,14 +1,14 @@
 name: koszykomat
 type: laravel
 docroot: public
-php_version: "8.3"
+php_version: "8.5"
 webserver_type: nginx-fpm
 xdebug_enabled: false
 additional_hostnames: []
 additional_fqdns: []
 database:
-    type: postgres
-    version: "17"
+    type: mysql
+    version: "8.0"
 use_dns_when_possible: true
 composer_version: "2"
 web_environment: []
