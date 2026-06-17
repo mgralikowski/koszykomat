@@ -16,12 +16,14 @@ set -euo pipefail
 # --- Configuration (override via environment) --------------------------------
 PHP_BIN="${PHP_BIN:-/usr/local/php85/bin/php}"
 KEEP_RELEASES="${KEEP_RELEASES:-5}"
-# Opcache strategy after the symlink swap:
-#   realpath   — nginx passes $realpath_root to FastCGI (custom DA template);
-#                nothing to do per deploy. Preferred.
-#   fpm-reload — run $FPM_RELOAD_CMD (requires a sudoers entry for the deploy user).
-OPCACHE_STRATEGY="${OPCACHE_STRATEGY:-realpath}"
+# Opcache strategy after the symlink swap (see deploy/SERVER-SETUP.md §5):
+#   none       — rely on opcache.validate_timestamps + the deploy /_version verify as the
+#                net. Correct for this Apache box; verified. Default.
+#   cachetool  — reset the FPM pool's opcache over its socket (no sudo). Optional hardening.
+#   fpm-reload — run $FPM_RELOAD_CMD (needs a sudoers entry — not available to a DA user).
+OPCACHE_STRATEGY="${OPCACHE_STRATEGY:-none}"
 FPM_RELOAD_CMD="${FPM_RELOAD_CMD:-sudo /usr/bin/systemctl reload php-fpm85}"
+CACHETOOL_FCGI="${CACHETOOL_FCGI:-/usr/local/php85/sockets/ebizo.sock}"
 # ------------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,12 +60,16 @@ echo "==> Signalling queue workers to restart"
 "$PHP_BIN" artisan queue:restart
 
 case "$OPCACHE_STRATEGY" in
+    none)
+        echo "==> Opcache: relying on validate_timestamps + the /_version verify — no action"
+        ;;
+    cachetool)
+        echo "==> Opcache: resetting FPM pool via cachetool ($CACHETOOL_FCGI)"
+        cachetool opcache:reset --fcgi="$CACHETOOL_FCGI"
+        ;;
     fpm-reload)
         echo "==> Reloading PHP-FPM (opcache flush)"
         $FPM_RELOAD_CMD
-        ;;
-    realpath)
-        echo "==> Opcache: nginx \$realpath_root strategy — no action needed"
         ;;
     *)
         echo "ERROR: unknown OPCACHE_STRATEGY '$OPCACHE_STRATEGY'"; exit 1

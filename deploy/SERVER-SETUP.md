@@ -52,65 +52,55 @@ This server runs **Apache + PHP-FPM** (no nginx). Point the docroot at the relea
 rebuilds and covers both the HTTP and HTTPS vhosts at once. As `ebizo`:
 
 **Account Manager → Domain Setup → koszykomat.pl → Customize configuration →
-`httpd.conf`**, then:
+`httpd.conf` → CUSTOM1** (appears before the variables are set):
 
-- **CUSTOM1** (appears before the variables are set):
+```
+|?DOCROOT=`HOME`/domains/`DOMAIN`/current/public|
+```
 
-  ```
-  |?DOCROOT=`HOME`/domains/`DOMAIN`/current/public|
-  ```
+Save → DirectAdmin rewrites the vhosts and reloads Apache. Confirm both the `:80` and
+`:443` vhosts now show `DocumentRoot ".../current/public"`. That's all that was needed on
+this server — DA's default config already grants `AllowOverride All` (so Laravel's
+`public/.htaccess` front-controller works → `/up` resolves) and `SymLinksIfOwnerMatch`
+(so Apache follows the `current` symlink). **Verified: only CUSTOM1 was required.**
 
-- **CUSTOM4** (the very last entry) — Apache must read Laravel's `public/.htaccess`
-  (front-controller rewrite, or `/up` 404s) and follow the `current` symlink:
-
-  ```apache
-  <Directory "/home/ebizo/domains/koszykomat.pl/current/public">
-      AllowOverride All
-      Options +SymLinksIfOwnerMatch
-      Require all granted
-  </Directory>
-  ```
-
-Save → DirectAdmin rewrites the vhosts and reloads Apache. Confirm both vhosts now show
-`DocumentRoot ".../current/public"` and that the extra `<Directory>` block is present.
-
-> Why not a `public_html → current/public` symlink? It works on a pure-nginx box, but
-> DirectAdmin can regenerate `public_html` on account operations, and the token override is
-> panel-native (survives rebuilds). Use the symlink **only** as a fallback if `DOCROOT`
-> token overrides are unavailable:
-> ```bash
-> cd $BASE && rm -rf public_html private_html
-> ln -sfn ./current/public public_html && ln -sfn ./public_html private_html
+> Fallback — only if your DA template lacks a global `AllowOverride All`: after the token
+> change, `/` serves the app but `/up` 404s. Add a `<Directory>` block in **CUSTOM4**:
+> ```apache
+> <Directory "/home/ebizo/domains/koszykomat.pl/current/public">
+>     AllowOverride All
+>     Options +SymLinksIfOwnerMatch
+>     Require all granted
+> </Directory>
 > ```
+>
+> A `public_html → current/public` symlink also works (and is the only option on a
+> pure-nginx box), but DirectAdmin can regenerate `public_html` on account operations, so
+> the token override is preferred here.
 
-## 5. Opcache strategy (root, one-time — pick ONE)
+## 5. Opcache after symlink swap (no action needed — here's why)
 
-PHP-FPM caches resolved realpaths: after a symlink swap it can keep serving **old code**
-(risk register: "stale code via opcache"). Two options; `deploy/release.sh` supports both
-via the `OPCACHE_STRATEGY` env var (default `realpath`).
+After a `current` symlink swap, PHP-FPM could in theory keep serving **old code** from
+opcache/realpath cache (risk register: "stale code via opcache"). On this server it does
+**not** require any setup, and we verified it:
 
-**Option A — nginx `$realpath_root` (preferred, zero per-deploy action):**
-as root, customize the DirectAdmin nginx template so FastCGI params use `$realpath_root`:
+- `opcache.validate_timestamps` is on (DirectAdmin default) → opcache revalidates by mtime;
+  a new release's files are newer, so the code reloads on its own.
+- `realpath_cache_ttl` (default 120 s) bounds any stale symlink resolution to ~2 minutes.
+- **The deploy's `Verify` step is the real safety net**: it curls `/_version` and fails the
+  CI run (loudly, not silently) if the live SHA ≠ the pushed SHA. A back-to-back deploy
+  (`cdbf074` → `e7dda06`) flipped `/_version` immediately — confirmed, no reload needed.
 
-```bash
-mkdir -p /usr/local/directadmin/data/templates/custom
-cp /usr/local/directadmin/data/templates/nginx_php.conf /usr/local/directadmin/data/templates/custom/
-# In the custom copy replace $document_root with $realpath_root for
-# SCRIPT_FILENAME and DOCUMENT_ROOT, then rebuild configs:
-sed -i 's/\$document_root/\$realpath_root/g' /usr/local/directadmin/data/templates/custom/nginx_php.conf
-echo "action=rewrite&value=httpd" >> /usr/local/directadmin/data/task.queue
-/usr/local/directadmin/custombuild/build rewrite_confs   # or wait for the task queue
-```
+`deploy/release.sh` defaults to `OPCACHE_STRATEGY=none` (no-op) accordingly.
 
-**Option B — FPM reload per deploy:** sudoers entry for the deploy user:
-
-```
-# /etc/sudoers.d/koszykomat-deploy
-<da-user> ALL=(root) NOPASSWD: /usr/bin/systemctl reload php-fpm85
-```
-
-and set `OPCACHE_STRATEGY=fpm-reload` (workflow env or `authorized_keys` `environment=`).
-Verify the exact FPM service name first: `systemctl list-units 'php*'`.
+> **Optional hardening, no root/sudo** — only if you ever want to kill the ~120 s window:
+> install [`cachetool`](https://github.com/gordalina/cachetool) (a phar) and set
+> `OPCACHE_STRATEGY=cachetool` so `release.sh` runs
+> `cachetool opcache:reset --fcgi=/usr/local/php85/sockets/ebizo.sock` — this resets the
+> FPM pool's opcache directly over its socket, no privileges required. Alternatively set
+> `opcache.revalidate_freq=0` + a low `realpath_cache_ttl` via DA's per-domain PHP settings.
+> (`OPCACHE_STRATEGY=fpm-reload` exists too but needs a sudoers entry — not available to a
+> plain DA user.)
 
 ## 6. Database connectivity check (local MySQL)
 
