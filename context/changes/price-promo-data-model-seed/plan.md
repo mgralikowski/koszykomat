@@ -314,13 +314,13 @@ Greenfield — no existing domain data, so no data migration and no backwards-co
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `ddev composer test`
-- [x] 2.2 Fresh migrate + seed succeeds on MySQL: `ddev artisan migrate:fresh --seed`
-- [x] 2.3 Seeder is idempotent on a second run (no errors, unchanged row counts)
-- [x] 2.4 Code style passes: `ddev composer lint`
+- [x] 2.1 Full test suite passes: `ddev composer test` — 80e24fd
+- [x] 2.2 Fresh migrate + seed succeeds on MySQL: `ddev artisan migrate:fresh --seed` — 80e24fd
+- [x] 2.3 Seeder is idempotent on a second run (no errors, unchanged row counts) — 80e24fd
+- [x] 2.4 Code style passes: `ddev composer lint` — 80e24fd
 
 #### Manual
 
-- [x] 2.5 Seeded prices hand-checked — chain totals close but not tied, promo lines plausible
-- [x] 2.6 All four PRD mechanics present in the data with sensible parameters
-- [x] 2.7 Polish product/brand names render without mojibake (utf8mb4 check)
+- [x] 2.5 Seeded prices hand-checked — chain totals close but not tied, promo lines plausible — 80e24fd
+- [x] 2.6 All four PRD mechanics present in the data with sensible parameters — 80e24fd
+- [x] 2.7 Polish product/brand names render without mojibake (utf8mb4 check) — 80e24fd
