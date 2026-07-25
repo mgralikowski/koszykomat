@@ -300,27 +300,27 @@ Greenfield — no existing domain data, so no data migration and no backwards-co
 
 #### Automated
 
-- [x] 1.1 Migrations apply cleanly on MySQL: `ddev artisan migrate:fresh`
-- [x] 1.2 Migrations apply cleanly on in-memory SQLite: `ddev composer test`
-- [x] 1.3 Code style passes: `ddev composer lint`
-- [x] 1.4 Models resolve and relations are wired (tinker eager-load smoke check)
+- [x] 1.1 Migrations apply cleanly on MySQL: `ddev artisan migrate:fresh` — 200bec5
+- [x] 1.2 Migrations apply cleanly on in-memory SQLite: `ddev composer test` — 200bec5
+- [x] 1.3 Code style passes: `ddev composer lint` — 200bec5
+- [x] 1.4 Models resolve and relations are wired (tinker eager-load smoke check) — 200bec5
 
 #### Manual
 
-- [x] 1.5 Schema inspected — composite unique index present, `price_entries.leaflet_id` NOT NULL
-- [x] 1.6 `PromoType` parameter matrix matches all four FR-007 mechanics (incl. second-for-grosz)
+- [x] 1.5 Schema inspected — composite unique index present, `price_entries.leaflet_id` NOT NULL — 200bec5
+- [x] 1.6 `PromoType` parameter matrix matches all four FR-007 mechanics (incl. second-for-grosz) — 200bec5
 
 ### Phase 2: Example-basket fixture, seeder, and integrity tests
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `ddev composer test`
-- [ ] 2.2 Fresh migrate + seed succeeds on MySQL: `ddev artisan migrate:fresh --seed`
-- [ ] 2.3 Seeder is idempotent on a second run (no errors, unchanged row counts)
-- [ ] 2.4 Code style passes: `ddev composer lint`
+- [x] 2.1 Full test suite passes: `ddev composer test`
+- [x] 2.2 Fresh migrate + seed succeeds on MySQL: `ddev artisan migrate:fresh --seed`
+- [x] 2.3 Seeder is idempotent on a second run (no errors, unchanged row counts)
+- [x] 2.4 Code style passes: `ddev composer lint`
 
 #### Manual
 
-- [ ] 2.5 Seeded prices hand-checked — chain totals close but not tied, promo lines plausible
-- [ ] 2.6 All four PRD mechanics present in the data with sensible parameters
-- [ ] 2.7 Polish product/brand names render without mojibake (utf8mb4 check)
+- [x] 2.5 Seeded prices hand-checked — chain totals close but not tied, promo lines plausible
+- [x] 2.6 All four PRD mechanics present in the data with sensible parameters
+- [x] 2.7 Polish product/brand names render without mojibake (utf8mb4 check)
