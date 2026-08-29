@@ -365,34 +365,34 @@ No schema changes and no data migration — this slice is pure read. The only de
 
 #### Automated
 
-- [x] 1.1 Full test suite passes: `ddev composer test`
-- [x] 1.2 Four mandatory mechanic tests pass: `ddev artisan test tests/Feature/Pricing/BasketComparatorTest.php`
-- [x] 1.3 Edge-case and Money tests pass
-- [x] 1.4 Code style passes: `ddev composer lint`
-- [x] 1.5 Comparator issues no N+1 (bounded query count asserted in test)
-- [x] 1.6 BCMath declared as a platform requirement (`check-platform-reqs` passes, `ext-bcmath` in composer.json)
-- [x] 1.7 No `bc*` call outside `app/Pricing/Money.php`
+- [x] 1.1 Full test suite passes: `ddev composer test` — 98b1e34
+- [x] 1.2 Four mandatory mechanic tests pass: `ddev artisan test tests/Feature/Pricing/BasketComparatorTest.php` — 98b1e34
+- [x] 1.3 Edge-case and Money tests pass — 98b1e34
+- [x] 1.4 Code style passes: `ddev composer lint` — 98b1e34
+- [x] 1.5 Comparator issues no N+1 (bounded query count asserted in test) — 98b1e34
+- [x] 1.6 BCMath declared as a platform requirement (`check-platform-reqs` passes, `ext-bcmath` in composer.json) — 98b1e34
+- [x] 1.7 No `bc*` call outside `app/Pricing/Money.php` — 98b1e34
 
 #### Manual
 
-- [x] 1.8 Engine hand-checked in tinker against the seeded basket (62,43 / 67,46 / 69,46)
-- [x] 1.9 Masło line confirmed to flip between card scenarios
-- [x] 1.10 The four mandatory tests reviewed — each asserts a real computed total
+- [x] 1.8 Engine hand-checked in tinker against the seeded basket (62,43 / 67,46 / 69,46) — 98b1e34
+- [x] 1.9 Masło line confirmed to flip between card scenarios — 98b1e34
+- [x] 1.10 The four mandatory tests reviewed — each asserts a real computed total — 98b1e34
 
 ### Phase 2: Guest homepage
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `ddev composer test`
-- [ ] 2.2 Homepage feature test passes: `ddev artisan test tests/Feature/HomePageTest.php`
-- [ ] 2.3 Frontend builds: `ddev npm run build`
-- [ ] 2.4 Code style passes: `ddev composer lint`
-- [ ] 2.5 `welcome.blade.php` removed and unreferenced
+- [x] 2.1 Full test suite passes: `ddev composer test`
+- [x] 2.2 Homepage feature test passes: `ddev artisan test tests/Feature/HomePageTest.php`
+- [x] 2.3 Frontend builds: `ddev npm run build`
+- [x] 2.4 Code style passes: `ddev composer lint`
+- [x] 2.5 `welcome.blade.php` removed and unreferenced
 
 #### Manual
 
-- [ ] 2.6 Page usable single-column at 375 px with no horizontal scroll
-- [ ] 2.7 Verdict, totals, mechanic labels, brand/gramatura pairs and validity windows all render in correct Polish
-- [ ] 2.8 Both card scenarios are distinguishable and clearly attributed
-- [ ] 2.9 Expired/incomplete data shows "brak danych" and names no winner
-- [ ] 2.10 Page feels well within the <2 s budget
+- [x] 2.6 Page usable single-column at 375 px with no horizontal scroll
+- [x] 2.7 Verdict, totals, mechanic labels, brand/gramatura pairs and validity windows all render in correct Polish
+- [x] 2.8 Both card scenarios are distinguishable and clearly attributed
+- [x] 2.9 Expired/incomplete data shows "brak danych" and names no winner
+- [x] 2.10 Page feels well within the <2 s budget

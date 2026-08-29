@@ -1,10 +1,9 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', HomeController::class);
 
 // Deploy verification: returns the git SHA stamped into the release by CI.
 // CI fails the deploy when this does not match the pushed commit (stale opcache guard).
