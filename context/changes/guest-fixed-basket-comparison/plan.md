@@ -383,16 +383,16 @@ No schema changes and no data migration — this slice is pure read. The only de
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `ddev composer test`
-- [x] 2.2 Homepage feature test passes: `ddev artisan test tests/Feature/HomePageTest.php`
-- [x] 2.3 Frontend builds: `ddev npm run build`
-- [x] 2.4 Code style passes: `ddev composer lint`
-- [x] 2.5 `welcome.blade.php` removed and unreferenced
+- [x] 2.1 Full test suite passes: `ddev composer test` — c79da6f
+- [x] 2.2 Homepage feature test passes: `ddev artisan test tests/Feature/HomePageTest.php` — c79da6f
+- [x] 2.3 Frontend builds: `ddev npm run build` — c79da6f
+- [x] 2.4 Code style passes: `ddev composer lint` — c79da6f
+- [x] 2.5 `welcome.blade.php` removed and unreferenced — c79da6f
 
 #### Manual
 
-- [x] 2.6 Page usable single-column at 375 px with no horizontal scroll
-- [x] 2.7 Verdict, totals, mechanic labels, brand/gramatura pairs and validity windows all render in correct Polish
-- [x] 2.8 Both card scenarios are distinguishable and clearly attributed
-- [x] 2.9 Expired/incomplete data shows "brak danych" and names no winner
-- [x] 2.10 Page feels well within the <2 s budget
+- [x] 2.6 Page usable single-column at 375 px with no horizontal scroll — c79da6f
+- [x] 2.7 Verdict, totals, mechanic labels, brand/gramatura pairs and validity windows all render in correct Polish — c79da6f
+- [x] 2.8 Both card scenarios are distinguishable and clearly attributed — c79da6f
+- [x] 2.9 Expired/incomplete data shows "brak danych" and names no winner — c79da6f
+- [x] 2.10 Page feels well within the <2 s budget — c79da6f
