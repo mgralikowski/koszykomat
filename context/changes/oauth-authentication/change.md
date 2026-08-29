@@ -1,7 +1,7 @@
 ---
 change_id: oauth-authentication
 title: OAuth authentication (Google)
-status: impl_reviewed
+status: implementing
 created: 2026-08-29
 updated: 2026-08-29
 archived_at: null

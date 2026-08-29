@@ -388,18 +388,18 @@ Rollback: revert the commits and re-run the reset. There is no data worth preser
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `ddev composer test`
-- [ ] 2.2 The new OAuth test passes: `ddev artisan test tests/Feature/Auth/GoogleLoginTest.php`
-- [ ] 2.3 Code style passes: `ddev composer lint`
-- [ ] 2.4 Routes registered as expected: `ddev artisan route:list --except-vendor`
+- [x] 2.1 Full test suite passes: `ddev composer test`
+- [x] 2.2 The new OAuth test passes: `ddev artisan test tests/Feature/Auth/GoogleLoginTest.php`
+- [x] 2.3 Code style passes: `ddev composer lint`
+- [x] 2.4 Routes registered as expected: `ddev artisan route:list --except-vendor`
 
 #### Manual
 
-- [ ] 2.5 `/auth/google/redirect` lands on Google's consent screen with the correct app name and scopes
-- [ ] 2.6 Returning from Google creates exactly one `users` row and one `oauth_identities` row
-- [ ] 2.7 Second login with the same account creates no new rows and reuses the user
-- [ ] 2.8 Declining consent returns to `/` with a Polish message, not a stack trace
-- [ ] 2.9 `POST /logout` ends the session; the homepage still renders for the guest
+- [x] 2.5 `/auth/google/redirect` lands on Google's consent screen with the correct app name and scopes
+- [x] 2.6 Returning from Google creates exactly one `users` row and one `oauth_identities` row
+- [x] 2.7 Second login with the same account creates no new rows and reuses the user
+- [x] 2.8 Declining consent returns to `/` with a Polish message, not a stack trace
+- [x] 2.9 `POST /logout` ends the session; the homepage still renders for the guest
 
 ### Phase 3: Header + Polish UI
 
