@@ -116,8 +116,32 @@
                     </article>
                 @endforeach
             </div>
+
+            <form method="POST" action="{{ route('basket.compare') }}" class="mt-4">
+                @csrf
+                <button type="submit"
+                        class="w-full rounded-lg bg-slate-900 px-4 py-3 font-semibold text-white hover:bg-slate-700">
+                    Porównaj
+                </button>
+            </form>
         @endif
     </section>
+
+    {{-- The report is discarded by every basket edit, so its absence needs explaining once —
+         otherwise it reads as the page losing your work rather than refusing to show a verdict
+         computed from a basket you have since changed. --}}
+    @if ($report === null && $comparisonWentStale)
+        <p role="status"
+           class="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
+            Koszyk się zmienił — poprzednie porównanie już go nie opisuje. Kliknij „Porównaj", żeby policzyć na nowo.
+        </p>
+    @endif
+
+    @if ($report)
+        <section class="mt-8" aria-label="Wynik porównania">
+            <x-comparison-report :report="$report" :removable-missing="true" />
+        </section>
+    @endif
 
 </main>
 @endsection

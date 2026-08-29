@@ -27,6 +27,7 @@ Route::middleware('auth')->prefix('koszyk')->name('basket.')->group(function () 
     Route::patch('/pozycje/{product}', [BasketController::class, 'update'])->name('update');
     Route::delete('/pozycje/{product}', [BasketController::class, 'destroy'])->name('destroy');
     Route::delete('/', [BasketController::class, 'clear'])->name('clear');
+    Route::post('/porownaj', [BasketController::class, 'compare'])->name('compare');
 });
 
 // Deploy verification: returns the git SHA stamped into the release by CI.

@@ -1,4 +1,4 @@
-@props(['report'])
+@props(['report', 'removableMissing' => false])
 
 {{-- The whole answer for one basket: verdict, per-chain totals, per-line evidence and the
      freshness note. Rendered both for the guest's fixed example basket and for a user's own
@@ -35,10 +35,37 @@
                 </p>
             @elseif ($verdict->isNoData())
                 <p class="text-2xl font-semibold text-slate-700 sm:text-3xl">Brak danych</p>
-                <p class="mt-1 text-slate-600">
-                    Nie mamy kompletu aktualnych cen, więc nie wskazujemy tańszej sieci.
-                    Brakuje: {{ implode(', ', $verdict->missingProducts) }}.
-                </p>
+
+                @if ($removableMissing)
+                    {{-- The user owns this basket, so the refusal comes with a way out: drop the
+                         products that blocked the verdict and the comparison can run. --}}
+                    <p class="mt-1 text-slate-600">
+                        Nie mamy kompletu aktualnych cen, więc nie wskazujemy tańszej sieci.
+                        Usuń poniższe produkty, żeby porównać resztę koszyka:
+                    </p>
+
+                    <ul class="mt-3 space-y-2">
+                        @foreach ($verdict->missingProducts as $missingSlug)
+                            <li class="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2">
+                                <span class="min-w-0 text-slate-700">{{ $missingSlug }}</span>
+
+                                <form method="POST" action="{{ route('basket.destroy', $missingSlug) }}" class="shrink-0">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="rounded-lg bg-white px-3 py-1.5 text-sm text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100 hover:text-slate-900">
+                                        Usuń z koszyka
+                                    </button>
+                                </form>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="mt-1 text-slate-600">
+                        Nie mamy kompletu aktualnych cen, więc nie wskazujemy tańszej sieci.
+                        Brakuje: {{ implode(', ', $verdict->missingProducts) }}.
+                    </p>
+                @endif
             @else
                 <p class="text-2xl font-semibold sm:text-3xl">Remis</p>
                 <p class="mt-1 text-slate-600">W obu sieciach koszyk kosztuje tyle samo.</p>

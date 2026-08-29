@@ -24,6 +24,12 @@ final readonly class BasketSession
 
     private const COMPARED_KEY = 'basket.compared';
 
+    /**
+     * Flashed for exactly one request, so the page that replaces a discarded report can say why
+     * it went away. Sticky state would keep apologising long after the user stopped caring.
+     */
+    private const STALE_KEY = 'basket.stale';
+
     public function __construct(private Session $session) {}
 
     /**
@@ -114,6 +120,17 @@ final readonly class BasketSession
     }
 
     /**
+     * Whether the request that led here discarded a report the user was looking at.
+     *
+     * Read only for the explanatory note: the report itself is already gone, so this cannot
+     * resurrect a stale verdict — it just stops the disappearance from looking like a bug.
+     */
+    public function comparisonWentStale(): bool
+    {
+        return (bool) $this->session->get(self::STALE_KEY, false);
+    }
+
+    /**
      * @return array<string, int>
      */
     private function map(): array
@@ -132,8 +149,16 @@ final readonly class BasketSession
      */
     private function store(array $map): void
     {
+        $hadComparison = $this->wantsComparison();
+
         $this->session->put(self::LINES_KEY, $map);
         $this->forgetComparison();
+
+        // Only when something was actually discarded — otherwise the note would fire on a first
+        // visit, claiming a comparison the user never ran.
+        if ($hadComparison) {
+            $this->session->flash(self::STALE_KEY, true);
+        }
     }
 
     private function clamp(int $quantity): int

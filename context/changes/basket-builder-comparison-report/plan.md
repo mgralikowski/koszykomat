@@ -348,35 +348,35 @@ Note that the production database reset owed from F-02 is still outstanding and 
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `ddev composer test`
-- [x] 2.2 Auth-gate test passes: `ddev artisan test tests/Feature/Basket/BasketAccessTest.php`
-- [x] 2.3 Code style passes: `ddev composer lint`
-- [x] 2.4 Frontend builds: `ddev npm run build`
-- [x] 2.5 Routes registered as expected: `ddev artisan route:list --except-vendor`
+- [x] 2.1 Full test suite passes: `ddev composer test` — 84f6f99
+- [x] 2.2 Auth-gate test passes: `ddev artisan test tests/Feature/Basket/BasketAccessTest.php` — 84f6f99
+- [x] 2.3 Code style passes: `ddev composer lint` — 84f6f99
+- [x] 2.4 Frontend builds: `ddev npm run build` — 84f6f99
+- [x] 2.5 Routes registered as expected: `ddev artisan route:list --except-vendor` — 84f6f99
 
 #### Manual
 
-- [x] 2.6 A guest clicking the homepage call-to-action reaches Google and returns to `/koszyk`, not to `/`
-- [x] 2.7 Adding the same product twice produces one line with quantity 2, not two lines
-- [x] 2.8 Quantity clamped to 1–99 even when the form is bypassed; setting 0 removes the line
-- [x] 2.9 Empty basket shows the Polish encouragement, not an error and not „brak danych"
-- [x] 2.10 Removing a single line and clearing the whole basket both work and survive a refresh
-- [x] 2.11 Builder usable single-column at 375 px with no horizontal scroll
+- [x] 2.6 A guest clicking the homepage call-to-action reaches Google and returns to `/koszyk`, not to `/` — 84f6f99
+- [x] 2.7 Adding the same product twice produces one line with quantity 2, not two lines — 84f6f99
+- [x] 2.8 Quantity clamped to 1–99 even when the form is bypassed; setting 0 removes the line — 84f6f99
+- [x] 2.9 Empty basket shows the Polish encouragement, not an error and not „brak danych" — 84f6f99
+- [x] 2.10 Removing a single line and clearing the whole basket both work and survive a refresh — 84f6f99
+- [x] 2.11 Builder usable single-column at 375 px with no horizontal scroll — 84f6f99
 
 ### Phase 3: The comparison report on demand
 
 #### Automated
 
-- [ ] 3.1 Full test suite passes: `ddev composer test`
-- [ ] 3.2 Code style passes: `ddev composer lint`
-- [ ] 3.3 Frontend builds: `ddev npm run build`
-- [ ] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
+- [x] 3.1 Full test suite passes: `ddev composer test`
+- [x] 3.2 Code style passes: `ddev composer lint`
+- [x] 3.3 Frontend builds: `ddev npm run build`
+- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
 
 #### Manual
 
-- [ ] 3.5 „Porównaj" renders verdict, both chain totals and the full per-line breakdown for the user's own basket
-- [ ] 3.6 Editing the basket after comparing hides the report and shows the „koszyk się zmienił" note
-- [ ] 3.7 A basket with a product lacking a valid price in one chain yields „brak danych", names it, and offers removal
-- [ ] 3.8 Removing the named product and comparing again produces a real verdict
-- [ ] 3.9 The homepage's no-data rendering is unchanged — no remove buttons appear there
-- [ ] 3.10 Report readable single-column at 375 px; comparison feels well within the <2 s budget
+- [x] 3.5 „Porównaj" renders verdict, both chain totals and the full per-line breakdown for the user's own basket
+- [x] 3.6 Editing the basket after comparing hides the report and shows the „koszyk się zmienił" note
+- [x] 3.7 A basket with a product lacking a valid price in one chain yields „brak danych", names it, and offers removal
+- [x] 3.8 Removing the named product and comparing again produces a real verdict
+- [x] 3.9 The homepage's no-data rendering is unchanged — no remove buttons appear there
+- [x] 3.10 Report readable single-column at 375 px; comparison feels well within the <2 s budget

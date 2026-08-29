@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Basket\BasketSession;
 use App\Models\Product;
+use App\Pricing\BasketComparator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,7 +19,7 @@ class BasketController extends Controller
 {
     public function __construct(private readonly BasketSession $basket) {}
 
-    public function show(): View
+    public function show(BasketComparator $comparator): View
     {
         $lines = $this->basket->lines();
 
@@ -32,7 +33,26 @@ class BasketController extends Controller
             'lines' => $lines,
             'products' => $products,
             'catalogue' => Product::query()->orderBy('name')->get(),
+            // Built only when the user asked for it and there is something to price. Any basket
+            // edit clears the flag, so what renders here always describes the basket above it.
+            'report' => $this->basket->wantsComparison() && ! $this->basket->isEmpty()
+                ? $comparator->compare($lines)
+                : null,
+            'comparisonWentStale' => $this->basket->comparisonWentStale(),
         ]);
+    }
+
+    /**
+     * Comparing is an explicit act (US-01: "tworzy koszyk i uruchamia porównanie"), not a side
+     * effect of editing — so it gets its own request rather than recomputing on every change.
+     */
+    public function compare(): RedirectResponse
+    {
+        if (! $this->basket->isEmpty()) {
+            $this->basket->markCompared();
+        }
+
+        return redirect()->route('basket.index');
     }
 
     public function store(Request $request): RedirectResponse
