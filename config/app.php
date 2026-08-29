@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Poland-only product: leaflet validity is a calendar concept, so today() must flip at
+    // local midnight rather than at 02:00 Europe/Warsaw.
+    'timezone' => 'Europe/Warsaw',
 
     /*
     |--------------------------------------------------------------------------

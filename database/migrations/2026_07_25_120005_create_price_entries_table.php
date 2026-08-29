@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\PromoType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -33,7 +32,7 @@ return new class extends Migration
             // Always present: the undiscounted unit price, so both the no-promo baseline and the
             // cost of a forced overbuy stay computable.
             $table->decimal('regular_price', 8, 2);
-            $table->string('promo_type')->default(PromoType::None->value);
+            $table->string('promo_type')->default('none'); // App\Enums\PromoType::None
             $table->decimal('promo_price', 8, 2)->nullable();
             $table->unsignedTinyInteger('required_quantity')->nullable();
             $table->decimal('second_item_price', 8, 2)->nullable();

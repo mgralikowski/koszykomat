@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * A dated leaflet for one chain. Every price entry belongs to one, which is what gives each
@@ -60,9 +61,15 @@ class Leaflet extends Model
     #[Scope]
     protected function validOn(Builder $query, DateTimeInterface|string|null $date = null): void
     {
-        $date ??= today();
+        // Normalize before comparing rather than wrapping the columns in whereDate(). A raw
+        // string binding is passed through verbatim, so `validOn('2026-08-30 12:00:00')` used to
+        // compare against a date column and silently exclude the leaflet's own last valid day —
+        // a false "brak danych" on every leaflet's final day. Plain where() on a normalized value
+        // also keeps the predicate sargable, so the (network_id, valid_from, valid_to) index is
+        // actually reachable on the basket-comparison path.
+        $on = Carbon::parse($date ?? today())->startOfDay();
 
-        $query->whereDate('valid_from', '<=', $date)
-            ->whereDate('valid_to', '>=', $date);
+        $query->where('valid_from', '<=', $on)
+            ->where('valid_to', '>=', $on);
     }
 }

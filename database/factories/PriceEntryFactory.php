@@ -25,7 +25,12 @@ class PriceEntryFactory extends Factory
     {
         return [
             'leaflet_id' => Leaflet::factory(),
-            'network_product_id' => NetworkProduct::factory(),
+            // Inherit the leaflet's chain. Building both children independently gave each its own
+            // Network, so a default row put a Lidl price inside a Biedronka leaflet — a shape no
+            // production data can have and one the schema cannot forbid.
+            'network_product_id' => fn (array $attributes): NetworkProduct => NetworkProduct::factory()->create([
+                'network_id' => Leaflet::query()->whereKey($attributes['leaflet_id'])->value('network_id'),
+            ]),
             'regular_price' => '9.99',
             'promo_type' => PromoType::None,
             'promo_price' => null,
