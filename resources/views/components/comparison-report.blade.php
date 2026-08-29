@@ -88,68 +88,85 @@
 <section aria-label="Szczegóły koszyka">
     <h2 class="mb-3 text-lg font-semibold">Co się składa na ten wynik</h2>
 
-    <div class="space-y-3">
-        @foreach ($report->basketLines as $line)
-            <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
-                <header class="mb-3 flex items-baseline justify-between gap-3">
-                    <h3 class="font-medium">{{ $line->name() }}</h3>
-                    <span class="shrink-0 text-sm text-slate-500">{{ $line->quantity }} szt.</span>
-                </header>
+    {{-- One list per verdict shown above, so the lines under a verdict always add up to it. A
+         listing only a card price can reach would otherwise read as "brak danych" in a single
+         without-card list while the with-card verdict priced it perfectly well. --}}
+    @foreach ($scenarios as $scenario)
+        @if ($showScenarioLabels)
+            <h3 class="mt-6 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {{ $scenario->scenario->label() }}
+            </h3>
+        @endif
 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    @foreach ($report->withoutCard->results as $networkSlug => $result)
-                        @php
-                            $price = $result->lineFor($line->slug);
-                            $cardPrice = $report->withCard->resultFor($networkSlug)?->lineFor($line->slug);
-                            $cardDiffers = $price && $cardPrice && ! $cardPrice->total->equals($price->total);
-                        @endphp
+        <div class="space-y-3">
+            @foreach ($report->basketLines as $line)
+                <article class="rounded-xl bg-white p-4 ring-1 ring-slate-200">
+                    <header class="mb-3 flex items-baseline justify-between gap-3">
+                        <h4 class="font-medium">{{ $line->name() }}</h4>
+                        <span class="shrink-0 text-sm text-slate-500">{{ $line->quantity }} szt.</span>
+                    </header>
 
-                        <div class="rounded-lg border border-slate-100 p-3">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                {{ $result->network->name }}
-                            </p>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        @foreach ($scenario->results as $networkSlug => $result)
+                            @php
+                                $price = $result->lineFor($line->slug);
 
-                            @if ($price)
-                                <p class="mt-1 text-xl font-semibold tabular-nums">{{ $price->total->format() }}</p>
+                                // Only meaningful in the single-list view. When both scenarios are
+                                // listed the card price has its own list and repeating it here
+                                // would say the same thing twice.
+                                $cardPrice = $showScenarioLabels
+                                    ? null
+                                    : $report->withCard->resultFor($networkSlug)?->lineFor($line->slug);
+                                $cardDiffers = $price && $cardPrice && ! $cardPrice->total->equals($price->total);
+                            @endphp
 
-                                <p class="mt-1 text-sm text-slate-700">{{ $price->listing->name }}</p>
-                                <p class="text-sm text-slate-500">
-                                    marka: {{ $price->listing->brand ?? 'brak marki' }}
-                                    @if ($price->listing->size_label)
-                                        · {{ $price->listing->size_label }}
+                            <div class="rounded-lg border border-slate-100 p-3">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    {{ $result->network->name }}
+                                </p>
+
+                                @if ($price)
+                                    <p class="mt-1 text-xl font-semibold tabular-nums">{{ $price->total->format() }}</p>
+
+                                    <p class="mt-1 text-sm text-slate-700">{{ $price->listing->name }}</p>
+                                    <p class="text-sm text-slate-500">
+                                        marka: {{ $price->listing->brand ?? 'brak marki' }}
+                                        @if ($price->listing->size_label)
+                                            · {{ $price->listing->size_label }}
+                                        @endif
+                                    </p>
+
+                                    <p class="mt-2 inline-block rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                                        {{ $price->appliedPromo->label() }}
+                                    </p>
+
+                                    @if ($price->promoRequiredMoreItems)
+                                        <p class="mt-2 text-xs text-amber-700">
+                                            Promocja wymaga min. {{ $price->entry->required_quantity }} szt. —
+                                            przy tej ilości nie obowiązuje.
+                                        </p>
                                     @endif
-                                </p>
 
-                                <p class="mt-2 inline-block rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                                    {{ $price->appliedPromo->label() }}
-                                </p>
+                                    @if ($cardDiffers)
+                                        <p class="mt-2 text-xs text-slate-600">
+                                            Z kartą: <span class="font-medium">{{ $cardPrice->total->format() }}</span>
+                                        </p>
+                                    @endif
 
-                                @if ($price->promoRequiredMoreItems)
-                                    <p class="mt-2 text-xs text-amber-700">
-                                        Promocja wymaga min. {{ $price->entry->required_quantity }} szt. —
-                                        przy tej ilości nie obowiązuje.
+                                    <p class="mt-2 text-xs text-slate-500">
+                                        Gazetka ważna {{ $price->validFrom->format('d.m.Y') }}–{{ $price->validTo->format('d.m.Y') }}
                                     </p>
+                                @else
+                                    <p class="mt-1 text-slate-500">brak danych</p>
+                                    <p class="text-sm text-slate-500">Nie mamy aktualnej ceny tego produktu w tej sieci.</p>
                                 @endif
-
-                                @if ($cardDiffers)
-                                    <p class="mt-2 text-xs text-slate-600">
-                                        Z kartą: <span class="font-medium">{{ $cardPrice->total->format() }}</span>
-                                    </p>
-                                @endif
-
-                                <p class="mt-2 text-xs text-slate-500">
-                                    Gazetka ważna {{ $price->validFrom->format('d.m.Y') }}–{{ $price->validTo->format('d.m.Y') }}
-                                </p>
-                            @else
-                                <p class="mt-1 text-slate-500">brak danych</p>
-                                <p class="text-sm text-slate-500">Nie mamy aktualnej ceny tego produktu w tej sieci.</p>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            </article>
-        @endforeach
-    </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    @endforeach
 </section>
 
 <footer class="mt-8 text-sm text-slate-500">

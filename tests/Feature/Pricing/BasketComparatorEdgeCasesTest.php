@@ -43,6 +43,45 @@ class BasketComparatorEdgeCasesTest extends TestCase
         $this->assertSame('6.98', $this->total($report));
     }
 
+    public function test_a_promo_price_above_the_regular_price_is_never_charged(): void
+    {
+        $listing = $this->listing();
+
+        // A misread digit from leaflet ingestion: 2,99 becomes 29,90 on the only entry this
+        // listing has, so cheapest-wins has no regular-price row to fall back on.
+        PriceEntry::factory()->simple('29.90')->create([
+            'leaflet_id' => $this->leafletFor($listing)->id,
+            'network_product_id' => $listing->id,
+            'regular_price' => '3.49',
+        ]);
+
+        $report = $this->compare(quantity: 2);
+
+        // The shopper would decline the promo and pay the shelf price: 2 x 3,49.
+        $this->assertSame('6.98', $this->total($report));
+        $this->assertSame(
+            PromoType::None,
+            $report->withoutCard->resultFor('lidl')->lines['produkt']->appliedPromo,
+            'A clamped line must report the mechanic actually charged, not the one on the row.',
+        );
+    }
+
+    public function test_a_second_item_price_above_the_regular_price_is_never_charged(): void
+    {
+        $listing = $this->listing();
+
+        PriceEntry::factory()->secondForFixed('99.00')->create([
+            'leaflet_id' => $this->leafletFor($listing)->id,
+            'network_product_id' => $listing->id,
+            'regular_price' => '4.99',
+        ]);
+
+        $report = $this->compare(quantity: 2);
+
+        // The second item costs shelf price at worst, so the pair is 4,99 + 4,99 — never 103,99.
+        $this->assertSame('9.98', $this->total($report));
+    }
+
     public function test_an_odd_quantity_under_second_for_fixed_pays_for_the_leftover_item(): void
     {
         $listing = $this->listing();
@@ -216,6 +255,19 @@ class BasketComparatorEdgeCasesTest extends TestCase
 
         $this->assertSame(VerdictType::NoData, $report->withoutCard->verdict->type);
         $this->assertNull($report->withoutCard->resultFor('lidl')->total);
+    }
+
+    public function test_an_empty_basket_yields_no_data_rather_than_a_tie(): void
+    {
+        $this->network('lidl');
+        $this->network('biedronka');
+
+        // Every chain sums to zero over no lines, which is an exact tie arithmetically and a
+        // verdict over nothing in product terms. Reachable from a missing config key.
+        $report = app(BasketComparator::class)->compare([]);
+
+        $this->assertSame(VerdictType::NoData, $report->withoutCard->verdict->type);
+        $this->assertSame(VerdictType::NoData, $report->withCard->verdict->type);
     }
 
     public function test_it_prices_a_multi_line_basket_without_an_n_plus_one(): void

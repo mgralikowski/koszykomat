@@ -16,7 +16,7 @@ class HomeController extends Controller
     public function __invoke(BasketComparator $comparator): View
     {
         return view('home', [
-            'report' => $comparator->compare(config('koszykomat.example_basket')),
+            'report' => $comparator->compare(config('koszykomat.example_basket', [])),
         ]);
     }
 }

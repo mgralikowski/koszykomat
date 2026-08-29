@@ -71,6 +71,18 @@ class HomePageTest extends TestCase
         $response->assertSee(today()->startOfWeek()->format('d.m.Y'));
     }
 
+    public function test_the_page_survives_an_empty_database(): void
+    {
+        // No seeder at all: no chains, no products, no leaflets. The public landing page must
+        // still render — a deploy that runs before the first ingestion is a normal state, not a
+        // 500 — and it must refuse to name a winner.
+        $response = $this->get('/');
+
+        $response->assertOk();
+        $response->assertSee('Brak danych');
+        $response->assertDontSee('Taniej w');
+    }
+
     public function test_expired_data_shows_no_data_and_names_no_winner(): void
     {
         $this->seed(ExampleBasketSeeder::class);

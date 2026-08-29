@@ -108,6 +108,12 @@ final class BasketComparator
             );
         }
 
+        // An empty basket has nothing to compare, and every chain sums to zero — which decide()
+        // would otherwise read as an exact tie and announce as a verdict over nothing.
+        if ($lines === []) {
+            return new ScenarioComparison($scenario, $results, Verdict::noData([]));
+        }
+
         return new ScenarioComparison($scenario, $results, $this->decide($results));
     }
 

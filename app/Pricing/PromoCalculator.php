@@ -30,21 +30,31 @@ final class PromoCalculator
 
         return match ($entry->promo_type) {
             PromoType::None => new LineCost($regular->times($quantity), PromoType::None, false),
-            PromoType::Simple, PromoType::LoyaltyCard => $this->flatPromoPrice($entry, $quantity),
+            PromoType::Simple, PromoType::LoyaltyCard => $this->flatPromoPrice($entry, $quantity, $regular),
             PromoType::OnePlusOne, PromoType::SecondForFixed => $this->conditional($entry, $quantity, $regular),
         };
     }
 
     /**
      * Simple promo price and loyalty-card price: a straight per-unit discount.
+     *
+     * A shopper can always decline a promo and pay the shelf price, so a promo price ABOVE the
+     * regular one is never what they would actually pay. Ingestion can write such a row (one
+     * misread digit), and on a listing carrying no separate regular-price entry the cheapest-wins
+     * pass has nothing to compare it against — without this clamp the basket verdict would be
+     * confidently wrong. The mechanic reported alongside it is the one actually charged.
      */
-    private function flatPromoPrice(PriceEntry $entry, int $quantity): ?LineCost
+    private function flatPromoPrice(PriceEntry $entry, int $quantity, Money $regular): ?LineCost
     {
         if ($entry->promo_price === null) {
             return null;
         }
 
         $unit = Money::fromDecimalString((string) $entry->promo_price);
+
+        if ($regular->isLessThan($unit)) {
+            return new LineCost($regular->times($quantity), PromoType::None, false);
+        }
 
         return new LineCost($unit->times($quantity), $entry->promo_type, false);
     }
@@ -68,6 +78,12 @@ final class PromoCalculator
         }
 
         $secondItemPrice = Money::fromDecimalString((string) $entry->second_item_price);
+
+        // The same clamp flatPromoPrice() applies: a further item inside the group never costs
+        // more than the shelf price, whatever a malformed row claims.
+        if ($regular->isLessThan($secondItemPrice)) {
+            $secondItemPrice = $regular;
+        }
 
         $groups = intdiv($quantity, $requiredQuantity);
         $remainder = $quantity % $requiredQuantity;
