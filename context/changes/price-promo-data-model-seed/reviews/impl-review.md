@@ -5,6 +5,7 @@
 - **Scope**: Phase 1 and Phase 2 of 2 (full plan — all 13 Progress items `[x]`)
 - **Date**: 2026-07-25
 - **Verdict**: NEEDS ATTENTION
+- **Triage**: complete (2026-08-29) — 5 fixed, 4 skipped, 1 deferred to F-03, 1 declined
 - **Findings**: 0 critical, 5 warnings, 5 observations
 
 ## Verification performed
@@ -60,7 +61,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
   - Tradeoff: Leaves the non-sargable index problem entirely unfixed, and pushes normalization onto every future caller.
   - Confidence: MEDIUM — closes the correctness hole but not the performance one.
   - Blind spot: Ingestion (F-03) may want to pass strings parsed from leaflet metadata.
-- **Decision**: PENDING
+- **Decision**: FIXED in `fbef5d7` — Fix A. Normalized with `startOfDay()` and switched to plain `where()`; regression test in `tests/Feature/Database/LeafletValidityScopeTest.php`.
 
 ### F2 — Seeded leaflet window expires on Monday; nothing re-seeds
 
@@ -79,7 +80,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
   - Tradeoff: Adds operational surface for demo data, and a missed run still produces the outage. Interacts with F5 — the standard `db:seed` entry point currently fails on a re-run.
   - Confidence: MEDIUM — correct in principle, but depends on the scheduler being wired, which this change deliberately did not do.
   - Blind spot: Production deploy flow does not currently run seeders at all.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — expiry is the guardrail behaving correctly, and it was observed doing exactly that on 2026-08-29. Demo data is re-seeded manually with `migrate:fresh --seed`. Revisit if the homepage is ever demoed unattended.
 
 ### F3 — Factories build cross-network price entries by default
 
@@ -100,7 +101,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
   - Tradeoff: Slightly more factory machinery; a test that genuinely wants two networks must be explicit — which is the right default.
   - Confidence: HIGH — reproduced directly; the mismatched `network_id`s are observable.
   - Blind spot: No existing test asserts the mismatch either way, so the fix is currently unguarded by a regression test.
-- **Decision**: PENDING
+- **Decision**: FIXED in `fbef5d7` — the listing now inherits the leaflet's network; regression test in `tests/Feature/Database/PriceEntryFactoryTest.php`.
 
 ### F4 — Promo-parameter contract enforces null-ness but not the plan's pinned values
 
@@ -118,7 +119,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
   - Tradeoff: The value rules are inequalities, not equalities, so the API is a touch more involved than the current name-list return.
   - Confidence: HIGH — the gap was confirmed by reading the enum's `match` arms; they carry no values.
   - Blind spot: Whether the rule engine will want these as validation or as calculation inputs — the shape may want revisiting in S-01.
-- **Decision**: PENDING
+- **Decision**: DEFERRED to F-03. Value-level validation guards against mis-parsed rows, and every row today is hand-written in the seeder. It becomes load-bearing when the vision pipeline writes entries.
 
 ### F5 — `db:seed` through the standard entry point fails on a second run
 
@@ -128,7 +129,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 - **Location**: `database/seeders/DatabaseSeeder.php:20`
 - **Detail**: Verified — `ddev artisan db:seed --force` against an already-seeded database throws a unique-constraint violation on `users.email` at `DatabaseSeeder.php:20`, *before* reaching the `$this->call(ExampleBasketSeeder::class)` added at `:25`. ExampleBasketSeeder's carefully built idempotency is therefore unreachable through the default entry point; only the explicit `--class=…\ExampleBasketSeeder` invocation works, which is what Progress item 2.3 tests. The plan required keeping the Test User creation "intact" — it was kept intact, and the pre-existing non-idempotency came with it, but the plan also required a seeder that survives re-running during S-01 development.
 - **Fix**: `User::firstOrCreate(['email' => 'test@example.com'], ['name' => 'Test User'])` in place of `User::factory()->create([...])`.
-- **Decision**: PENDING
+- **Decision**: FIXED in `fbef5d7` — Test User creation guarded by an existence check.
 
 ### F6 — Seeder is idempotent for additions, not for edits
 
@@ -138,7 +139,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 - **Location**: `database/seeders/ExampleBasketSeeder.php:84-89`
 - **Detail**: Price entries are keyed on `(leaflet_id, network_product_id, promo_type)` — matching the unique index, which is correct for re-running. But changing a catalogue entry's `promo_type` and re-seeding leaves the old `PriceEntry` behind, so that listing ends up with two competing entries and a future comparison may double-count. Editing prices in place is fine; editing mechanics is not. This will be exercised during S-01 development, which is precisely when the seeder gets re-run.
 - **Fix**: Delete the seed's price entries for the fixture leaflets before re-inserting, or key deletion on `LEAFLET_SOURCE_REFERENCE`.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — `migrate:fresh --seed` is the standard move after editing the catalogue, so the edit case does not arise in practice.
 
 ### F7 — `endOfWeek()` writes `23:59:59`, and the two drivers store it differently
 
@@ -148,7 +149,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 - **Location**: `database/seeders/ExampleBasketSeeder.php:138`, `database/factories/LeafletFactory.php:28`
 - **Detail**: `today()->endOfWeek()` carries a `23:59:59` time component, and Eloquent's `date` cast serializes on write via `fromDateTime()` → `'Y-m-d H:i:s'`. MySQL truncates to `2026-07-26`; SQLite stores the literal `'2026-07-26 23:59:59'`. Both `validOn()` scopes survive it (`date()`/`strftime()` normalize) and so does `Carbon::parse(Leaflet::max('valid_to'))` in the test — but any future raw string comparison or `max()` on `valid_to` behaves differently per driver, in a codebase that deliberately runs MySQL in prod and SQLite in tests.
 - **Fix**: `->endOfWeek()->startOfDay()` (or `->toDateString()`) at both write sites.
-- **Decision**: PENDING
+- **Decision**: SKIPPED, together with F2 — the seeded window is unchanged, so the `23:59:59` component stays. One-line fix if a raw `valid_to` comparison ever appears.
 
 ### F8 — App timezone is UTC for a Poland-only product
 
@@ -158,7 +159,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 - **Location**: `config/app.php:68` (pre-existing, not in this diff — flagged because this change makes it load-bearing)
 - **Detail**: `today()` resolves in UTC. Leaflet validity therefore flips at 02:00 Europe/Warsaw rather than at midnight, giving a two-hour window each night where the data-freshness verdict disagrees with the user's calendar. Harmless today; it becomes a "verdict lies about freshness" edge once F-03 writes real dated leaflets and the nightly refresh (FR-009) runs.
 - **Fix**: Set `'timezone' => 'Europe/Warsaw'` in `config/app.php`, or decide explicitly to keep UTC and normalize at the boundary.
-- **Decision**: PENDING
+- **Decision**: FIXED in `fbef5d7` — `config/app.php` timezone set to `Europe/Warsaw`.
 
 ### F9 — Planned `network_product_id` index skipped, and the migration imports the enum
 
@@ -172,7 +173,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 
   (b) The migration imports `App\Enums\PromoType` (`:3`) to supply the `promo_type` column default (`:36`). Standard Laravel caution: renaming or removing a case later breaks `migrate` on a fresh database, because migrations are meant to be frozen history while enums evolve.
 - **Fix**: Leave (a) as implemented and note the deviation in the plan; for (b), inline the literal `'none'` with a comment pointing at `PromoType`.
-- **Decision**: PENDING
+- **Decision**: (a) DECLINED — InnoDB creates the foreign-key index and the migration says so; the deviation is deliberate. (b) FIXED in `fbef5d7` — literal `'none'` with a comment, enum import dropped.
 
 ### F10 — N+1 query patterns inside the integrity test
 
@@ -182,7 +183,7 @@ Manual items 1.5, 1.6, 2.5, 2.6, 2.7 are all marked `[x]` in Progress. Independe
 - **Location**: `tests/Feature/Database/PricePromoSeedTest.php:72, 89-90, 194`
 - **Detail**: `NetworkProduct::where(...)->get()` per product and `$listing->priceEntries()->count()` per listing — a query per loop iteration. Harmless at fixture scale (the suite runs in 0.86s), but it is the exact pattern `CLAUDE.md` bans for the comparison path, and test code is where habits get copied into S-01.
 - **Fix**: `Product::with('networkProducts')` and `->withCount('priceEntries')` in place of the per-iteration queries.
-- **Decision**: PENDING
+- **Decision**: SKIPPED — cosmetic, in test code, at fixture scale. The ban on N+1 is enforced where it matters: `BasketComparatorEdgeCasesTest` asserts a bounded query count on the comparison path.
 
 ## Clean findings (no action)
 
