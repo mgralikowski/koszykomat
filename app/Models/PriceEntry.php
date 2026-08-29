@@ -17,10 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Money arithmetic contract: `regular_price`, `promo_price` and `second_item_price` are
  * DECIMAL(8,2) cast with `decimal:2`, so Eloquent returns *strings* that silently coerce to
- * float in arithmetic. The conditional mechanics spread a price across `required_quantity` —
- * exactly where float drift produces an off-by-one-grosz basket total and an untrustworthy
- * verdict. Compute with BCMath (bcadd/bcsub/bcmul, scale 2) or convert to integer grosze
- * first; never use raw `+` / `*` on these values.
+ * float in arithmetic. Always compute through App\Pricing\Money, which is the only class
+ * permitted to call bc* — `bcmath.scale` is 0, so any bc* call omitting an explicit scale
+ * truncates the fractional part silently. Never use raw `+` / `*` on these values.
  *
  * Which promo parameter columns are meaningful for which `promo_type` is defined by
  * App\Enums\PromoType — the matrix lives there because it cannot be expressed in DDL that

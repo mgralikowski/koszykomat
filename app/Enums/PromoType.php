@@ -12,10 +12,9 @@ namespace App\Enums;
  *
  * Money arithmetic contract for every consumer of this enum: prices are stored as
  * DECIMAL(8,2) and cast with `decimal:2`, which hands PHP back *strings* that silently
- * coerce to float in arithmetic. The conditional mechanics spread a price across a required
- * quantity — exactly where binary-float drift produces an off-by-one-grosz basket total and
- * therefore an untrustworthy verdict. Compute with BCMath (bcadd/bcsub/bcmul, scale 2) or
- * convert to integer grosze first; never use raw `+` / `*` on cast values.
+ * coerce to float in arithmetic. Always compute through App\Pricing\Money; never use raw
+ * `+` / `*` on cast values, and never call bc* directly — `bcmath.scale` is 0, so a call
+ * without an explicit scale truncates the fractional part silently.
  */
 enum PromoType: string
 {
