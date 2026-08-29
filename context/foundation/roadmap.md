@@ -7,6 +7,9 @@ updated: 2026-08-29
 prd_version: 1
 main_goal: market-feedback
 top_blocker: external
+milestone_id: mvp-promo-aware-basket-verdict
+milestone_seq: 1
+milestone_status: open
 ---
 
 # Roadmap: Koszykomat
@@ -14,6 +17,17 @@ top_blocker: external
 > Derived from `context/foundation/prd.md` (v1) + `tech-stack.md` / `infrastructure.md` / `deploy-plan.md` + auto-researched codebase baseline.
 > Edit-in-place; archive when superseded.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
+
+## Milestone
+
+**M-01: MVP — promo-aware basket verdict** — Status: open
+
+- **Intent:** prove and ship the product wedge end-to-end — a basket verdict that understands the four promo mechanics, prices the forced overbuy, and either names an honest winner or says "no data" — first on a hand-seeded dataset, then on real nightly-refreshed leaflet data.
+- **Source materials:** `context/foundation/prd.md` (v1) + `tech-stack.md` / `infrastructure.md` / `deploy-plan.md` + auto-researched codebase baseline.
+- **Done when:** every F-NN and S-NN below is `done`.
+- **Scope anchors:** FR-001 – FR-009, US-01; NFR mobile-first, NFR <2 s responsiveness, NFR data-freshness transparency, NFR basket privacy; Business Logic; Access Control.
+
+> Adopted `2026-08-29` — this roadmap predates the milestone layer and was wrapped as `M-01` in place. Slices and the dependency graph were preserved verbatim. Item statuses were re-derived from what is actually on disk: F-01 and F-02 are `done` (archived under `context/archive/`), S-01 is `in-progress` (implemented, not yet reviewed or archived), S-02 is `in-progress` (implementation under way).
 
 ## Vision recap
 
@@ -31,11 +45,11 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 
 | ID   | Change ID                        | Outcome (user can …)                                              | Prerequisites | PRD refs                          | Status   |
 | ---- | -------------------------------- | ----------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
-| F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | ready    |
-| F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | in-progress |
+| F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | done |
+| F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | done |
 | F-03 | leaflet-vision-ingestion         | (foundation) queued leaflet→structured-data ingestion + CLI trigger | F-01        | FR-006, FR-009                    | blocked  |
-| S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | proposed |
-| S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | proposed |
+| S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | in-progress |
+| S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | in-progress |
 | S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | proposed |
 | S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | blocked  |
 
@@ -75,7 +89,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Rough data volume (price/promo entries per week for two chains) — Owner: user. Block: no. (PRD Open Question 2; sizing only, does not block a minimal schema.)
 - **Risk:** the promo-type modeling is load-bearing — if the four mechanics can't be represented cleanly as data, both the rule engine (S-01) and ingestion (F-03) churn. Kept deliberately minimal (one seed, no ingestion) so S-01 exercises it immediately rather than pre-building the whole data layer.
-- **Status:** ready
+- **Status:** done
 
 ### F-02: OAuth authentication (Socialite)
 
@@ -89,7 +103,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which OAuth provider(s) to ship first (Google named as the example in FR-002) — Owner: user. Block: no. (Google is a safe working default.)
 - **Risk:** Socialite is not yet installed (baseline), but this is a well-trodden Laravel path with low technical risk. Sequenced as a standalone foundation because login on its own delivers no product value — it only gates S-02/S-03 — and it parallelizes fully with the guest path.
-- **Status:** in-progress
+- **Status:** done
 
 ### F-03: Leaflet vision-ingestion pipeline
 
@@ -117,7 +131,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** this slice introduces the promo-mechanics rule engine (the wedge) and carries the four mandatory PHPUnit promo tests required by CLAUDE.md — correctness here is the whole product's credibility. Placed first because it proves the core hypothesis with no auth and no ingestion prerequisite.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-02: Basket builder + full comparison report
 
@@ -130,7 +144,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Expected traffic order-of-magnitude (qps) for the <2s budget under concurrency — Owner: user. Block: no. (PRD Open Question 1; a single local MySQL comparison is well within budget with eager loading — this only affects capacity planning.)
 - **Risk:** the largest user-facing slice. Must hit the <2s budget with real cross-network product matching (FR-008) and eager-loaded relations (no N+1, per CLAUDE.md). Matching correctness directly affects verdict trust, so pairings are always shown explicitly for the user to judge.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-03: Save and revisit a basket
 
@@ -188,6 +202,15 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **On-demand refresh in the product UI** — Why parked: PRD §Non-Goals (automatic nightly cron + CLI only).
 - **Other source formats (API, PDF)** — Why parked: PRD §Non-Goals + shape-notes `## Forward` (ingestion architecture is multi-source-ready, but only the graphic-format provider ships in MVP).
 
+## Milestone History
+
+(Append-only. Carried forward verbatim into each successor milestone's roadmap.)
+
+- **M-01: MVP — promo-aware basket verdict** (`mvp-promo-aware-basket-verdict`) — opened, adopted from the pre-milestone roadmap on `2026-08-29`. No milestone has closed yet.
+
 ## Done
 
 (Empty on first generation. `/10x-archive` appends here — and flips the item's Status to `done` — when a change whose Change ID matches a roadmap item is archived. Do NOT pre-populate.)
+
+- **F-01: (foundation) a minimal schema for products, per-network prices, the four promo mechanic types (with their parameters), and leaflet validity windows is in place, plus a hand-seeded dataset for one example basket.** — Archived 2026-08-29 → `context/archive/2026-07-25-price-promo-data-model-seed/`. Lesson: —.
+- **F-02: (foundation) OAuth login via a configured provider works, registration is open, and authenticated sessions are issued — no email+password path.** — Archived 2026-08-29 → `context/archive/2026-08-29-oauth-authentication/`. Lesson: —.
