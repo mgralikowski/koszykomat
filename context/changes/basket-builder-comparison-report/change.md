@@ -1,7 +1,7 @@
 ---
 change_id: basket-builder-comparison-report
 title: Basket builder + full comparison report
-status: implementing
+status: implemented
 created: 2026-08-29
 updated: 2026-08-29
 archived_at: null

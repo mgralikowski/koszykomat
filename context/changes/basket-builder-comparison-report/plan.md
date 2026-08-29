@@ -367,16 +367,16 @@ Note that the production database reset owed from F-02 is still outstanding and 
 
 #### Automated
 
-- [x] 3.1 Full test suite passes: `ddev composer test`
-- [x] 3.2 Code style passes: `ddev composer lint`
-- [x] 3.3 Frontend builds: `ddev npm run build`
-- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
+- [x] 3.1 Full test suite passes: `ddev composer test` — b3f3d11
+- [x] 3.2 Code style passes: `ddev composer lint` — b3f3d11
+- [x] 3.3 Frontend builds: `ddev npm run build` — b3f3d11
+- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php` — b3f3d11
 
 #### Manual
 
-- [x] 3.5 „Porównaj" renders verdict, both chain totals and the full per-line breakdown for the user's own basket
-- [x] 3.6 Editing the basket after comparing hides the report and shows the „koszyk się zmienił" note
-- [x] 3.7 A basket with a product lacking a valid price in one chain yields „brak danych", names it, and offers removal
-- [x] 3.8 Removing the named product and comparing again produces a real verdict
-- [x] 3.9 The homepage's no-data rendering is unchanged — no remove buttons appear there
-- [x] 3.10 Report readable single-column at 375 px; comparison feels well within the <2 s budget
+- [x] 3.5 „Porównaj" renders verdict, both chain totals and the full per-line breakdown for the user's own basket — b3f3d11
+- [x] 3.6 Editing the basket after comparing hides the report and shows the „koszyk się zmienił" note — b3f3d11
+- [x] 3.7 A basket with a product lacking a valid price in one chain yields „brak danych", names it, and offers removal — b3f3d11
+- [x] 3.8 Removing the named product and comparing again produces a real verdict — b3f3d11
+- [x] 3.9 The homepage's no-data rendering is unchanged — no remove buttons appear there — b3f3d11
+- [x] 3.10 Report readable single-column at 375 px; comparison feels well within the <2 s budget — b3f3d11
