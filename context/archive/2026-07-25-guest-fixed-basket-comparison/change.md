@@ -1,10 +1,10 @@
 ---
 change_id: guest-fixed-basket-comparison
 title: Guest fixed basket comparison
-status: impl_reviewed
+status: archived
 created: 2026-07-25
 updated: 2026-08-29
-archived_at: null
+archived_at: 2026-08-29T19:59:15Z
 ---
 
 ## Notes

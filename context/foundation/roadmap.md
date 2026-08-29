@@ -48,7 +48,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | done |
 | F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | done |
 | F-03 | leaflet-vision-ingestion         | (foundation) queued leaflet→structured-data ingestion + CLI trigger | F-01        | FR-006, FR-009                    | blocked  |
-| S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | in-progress |
+| S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | done |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | in-progress |
 | S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | proposed |
 | S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | blocked  |
@@ -131,7 +131,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** this slice introduces the promo-mechanics rule engine (the wedge) and carries the four mandatory PHPUnit promo tests required by CLAUDE.md — correctness here is the whole product's credibility. Placed first because it proves the core hypothesis with no auth and no ingestion prerequisite.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: Basket builder + full comparison report
 
@@ -214,3 +214,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **F-01: (foundation) a minimal schema for products, per-network prices, the four promo mechanic types (with their parameters), and leaflet validity windows is in place, plus a hand-seeded dataset for one example basket.** — Archived 2026-08-29 → `context/archive/2026-07-25-price-promo-data-model-seed/`. Lesson: —.
 - **F-02: (foundation) OAuth login via a configured provider works, registration is open, and authenticated sessions are issued — no email+password path.** — Archived 2026-08-29 → `context/archive/2026-08-29-oauth-authentication/`. Lesson: —.
+- **S-01: a guest sees, on the homepage, a fixed example-basket comparison of Lidl vs Biedronka with a "where is it cheaper" verdict and all four promo mechanics (simple promo price, 1+1 free, second-for-1-PLN/grosz, loyalty-card price) correctly priced.** — Archived 2026-08-29 → `context/archive/2026-07-25-guest-fixed-basket-comparison/`. Lesson: —.
