@@ -373,16 +373,16 @@ Rollback: revert the commits and re-run the reset. There is no data worth preser
 
 #### Automated
 
-- [x] 1.1 Socialite installed and platform requirements satisfied: `ddev composer check-platform-reqs`
-- [x] 1.2 Migrations apply from scratch: `ddev artisan migrate:fresh --seed`
-- [x] 1.3 Full test suite passes unchanged: `ddev composer test`
-- [x] 1.4 Code style passes: `ddev composer lint`
-- [x] 1.5 No `password` reference remains outside vendor
+- [x] 1.1 Socialite installed and platform requirements satisfied: `ddev composer check-platform-reqs` — 662f7bc
+- [x] 1.2 Migrations apply from scratch: `ddev artisan migrate:fresh --seed` — 662f7bc
+- [x] 1.3 Full test suite passes unchanged: `ddev composer test` — 662f7bc
+- [x] 1.4 Code style passes: `ddev composer lint` — 662f7bc
+- [x] 1.5 No `password` reference remains outside vendor — 662f7bc
 
 #### Manual
 
-- [x] 1.6 `users` has no `password` column and `password_reset_tokens` no longer exists
-- [x] 1.7 `oauth_identities` carries the unique `(provider, provider_user_id)` index
+- [x] 1.6 `users` has no `password` column and `password_reset_tokens` no longer exists — 662f7bc
+- [x] 1.7 `oauth_identities` carries the unique `(provider, provider_user_id)` index — 662f7bc
 
 ### Phase 2: Login flow
 

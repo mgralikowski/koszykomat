@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\OauthProvider;
 use App\Models\OauthIdentity;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,7 +25,7 @@ class OauthIdentityFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'provider' => 'google',
+            'provider' => OauthProvider::Google,
             'provider_user_id' => (string) fake()->unique()->numerify('##################'),
         ];
     }

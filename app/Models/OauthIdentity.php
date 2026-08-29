@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OauthProvider;
 use Database\Factories\OauthIdentityFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,5 +26,17 @@ class OauthIdentity extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'provider' => OauthProvider::class,
+        ];
     }
 }

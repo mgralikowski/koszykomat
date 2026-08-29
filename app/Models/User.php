@@ -31,6 +31,16 @@ class User extends Authenticatable
     }
 
     /**
+     * There is no password to return. This exists only so the framework's password-shaped call
+     * sites receive a string: SessionGuard passes it to hash_hmac() when issuing a remember-me
+     * cookie, and null triggers a PHP 8.5 deprecation there.
+     */
+    public function getAuthPassword(): string
+    {
+        return '';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

@@ -12,6 +12,10 @@ return new class extends Migration
      * A user is identified by (provider, provider_user_id), never by email — email changes at
      * the provider must not orphan an account. Kept as its own table rather than columns on
      * `users` so a second provider needs no schema change once real accounts exist.
+     *
+     * `provider` is a plain string column cast to App\Enums\OauthProvider in the model, the same
+     * arrangement `price_entries.promo_type` uses: enum DDL is MySQL-specific and the test suite
+     * runs on SQLite, so the closed set lives in PHP rather than in the schema.
      */
     public function up(): void
     {
