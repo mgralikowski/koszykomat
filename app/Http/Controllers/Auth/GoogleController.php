@@ -64,7 +64,11 @@ class GoogleController extends Controller
         // Without this the pre-login session id survives the privilege change — session fixation.
         $request->session()->regenerate();
 
-        return redirect('/');
+        // A guest bounced off a gated route (the basket) comes back to it rather than to the
+        // homepage. The failure branches above deliberately keep their literal redirect('/'):
+        // a login that did not succeed must land where its message can be read, not re-enter
+        // the gate that would send it straight back to Google.
+        return redirect()->intended('/');
     }
 
     /**

@@ -15,5 +15,20 @@
 
     <x-comparison-report :report="$report" />
 
+    {{-- The demo above earns the click; this is where it converts. Rendered for guests too —
+         the `auth` middleware on the basket turns a guest's click into the Google round-trip
+         and brings them back here, so branching on @auth would only hide the product's main
+         feature from everyone who does not yet have an account. --}}
+    <section class="mt-8 rounded-2xl bg-slate-900 p-5 text-center sm:p-6">
+        <p class="text-lg font-semibold text-white">Policz swój własny koszyk</p>
+        <p class="mt-1 text-sm text-slate-300">
+            Wybierz produkty, które kupujesz, i sprawdź, gdzie wyjdą taniej.
+        </p>
+        <a href="{{ route('basket.index') }}"
+           class="mt-4 inline-block rounded-lg bg-white px-4 py-2 font-medium text-slate-900 hover:bg-slate-100">
+            Zbuduj własny koszyk
+        </a>
+    </section>
+
 </main>
 @endsection

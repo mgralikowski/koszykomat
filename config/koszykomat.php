@@ -25,4 +25,22 @@ return [
         ['product' => 'czekolada-mleczna-100g', 'quantity' => 4],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | User basket
+    |--------------------------------------------------------------------------
+    |
+    | Bounds for a quantity the user can put on one basket line. The cap is not
+    | cosmetic: PromoCalculator multiplies through Money::times($quantity) with
+    | no limit of its own, so a quantity smuggled past the form would produce an
+    | absurd but entirely plausible-looking total. BasketSession clamps on every
+    | write, which is why this is the only place the numbers live.
+    |
+    */
+
+    'basket' => [
+        'min_quantity' => 1,
+        'max_quantity' => 99,
+    ],
+
 ];

@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Production sits behind Cloudflare (proxied) + nginx — trust the proxy
         // chain so Laravel detects the original HTTPS scheme and client IP.
         $middleware->trustProxies(at: '*');
+
+        // Auth is OAuth-only, so there is no `login` route for the framework to fall back on —
+        // without this a guest hitting a gated route gets a RouteNotFoundException. Laravel's
+        // unauthenticated handler redirects via redirect()->guest(), which stores the requested
+        // URL as `url.intended`; GoogleController::callback then returns the user to it.
+        $middleware->redirectGuestsTo(fn () => route('auth.google.redirect'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

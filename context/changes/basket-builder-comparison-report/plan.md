@@ -333,35 +333,35 @@ Note that the production database reset owed from F-02 is still outstanding and 
 
 #### Automated
 
-- [x] 1.1 Full test suite passes: `ddev composer test`
-- [x] 1.2 Homepage test passes unchanged: `ddev artisan test tests/Feature/HomePageTest.php`
-- [x] 1.3 Code style passes: `ddev composer lint`
-- [x] 1.4 Frontend builds: `ddev npm run build`
-- [x] 1.5 `home.blade.php` contains no verdict or per-line markup — only the page intro and the component tag
+- [x] 1.1 Full test suite passes: `ddev composer test` — da5cdba
+- [x] 1.2 Homepage test passes unchanged: `ddev artisan test tests/Feature/HomePageTest.php` — da5cdba
+- [x] 1.3 Code style passes: `ddev composer lint` — da5cdba
+- [x] 1.4 Frontend builds: `ddev npm run build` — da5cdba
+- [x] 1.5 `home.blade.php` contains no verdict or per-line markup — only the page intro and the component tag — da5cdba
 
 #### Manual
 
-- [x] 1.6 Homepage renders identically to before: verdict, both chain totals, all four lines with brand, size, mechanic label, validity window, closing note
-- [x] 1.7 Page still usable single-column at 375 px with no horizontal scroll
+- [x] 1.6 Homepage renders identically to before: verdict, both chain totals, all four lines with brand, size, mechanic label, validity window, closing note — da5cdba
+- [x] 1.7 Page still usable single-column at 375 px with no horizontal scroll — da5cdba
 
 ### Phase 2: Session-backed basket and the builder page
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `ddev composer test`
-- [ ] 2.2 Auth-gate test passes: `ddev artisan test tests/Feature/Basket/BasketAccessTest.php`
-- [ ] 2.3 Code style passes: `ddev composer lint`
-- [ ] 2.4 Frontend builds: `ddev npm run build`
-- [ ] 2.5 Routes registered as expected: `ddev artisan route:list --except-vendor`
+- [x] 2.1 Full test suite passes: `ddev composer test`
+- [x] 2.2 Auth-gate test passes: `ddev artisan test tests/Feature/Basket/BasketAccessTest.php`
+- [x] 2.3 Code style passes: `ddev composer lint`
+- [x] 2.4 Frontend builds: `ddev npm run build`
+- [x] 2.5 Routes registered as expected: `ddev artisan route:list --except-vendor`
 
 #### Manual
 
-- [ ] 2.6 A guest clicking the homepage call-to-action reaches Google and returns to `/koszyk`, not to `/`
-- [ ] 2.7 Adding the same product twice produces one line with quantity 2, not two lines
-- [ ] 2.8 Quantity clamped to 1–99 even when the form is bypassed; setting 0 removes the line
-- [ ] 2.9 Empty basket shows the Polish encouragement, not an error and not „brak danych"
-- [ ] 2.10 Removing a single line and clearing the whole basket both work and survive a refresh
-- [ ] 2.11 Builder usable single-column at 375 px with no horizontal scroll
+- [x] 2.6 A guest clicking the homepage call-to-action reaches Google and returns to `/koszyk`, not to `/`
+- [x] 2.7 Adding the same product twice produces one line with quantity 2, not two lines
+- [x] 2.8 Quantity clamped to 1–99 even when the form is bypassed; setting 0 removes the line
+- [x] 2.9 Empty basket shows the Polish encouragement, not an error and not „brak danych"
+- [x] 2.10 Removing a single line and clearing the whole basket both work and survive a refresh
+- [x] 2.11 Builder usable single-column at 375 px with no horizontal scroll
 
 ### Phase 3: The comparison report on demand
 
