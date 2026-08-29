@@ -56,3 +56,8 @@ Thumbs.db
 /.claude/skills/10x-tech-stack-selector/references/starter-registry.yaml
 /.claude/skills/10x-tech-stack-selector/SKILL.md
 /.claude/.10x-cli-manifest.json
+
+# 10x-cli generated agent tooling — regenerate with `10x get`, do not version.
+# Scoped to the 10x-* namespace so project-owned skills stay tracked.
+/.claude/skills/10x-*/
+/.claude/prompts/m1l*.md
