@@ -14,6 +14,15 @@ return [
     |
     */
 
+    // The only OAuth provider in the MVP (FR-002). The redirect is derived from APP_URL so ddev
+    // and production resolve to their own callback without a config edit — both must be
+    // registered as authorized redirect URIs in the Google Cloud console.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/auth/google/callback',
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

@@ -3,7 +3,7 @@ project: Koszykomat
 version: 1
 status: draft
 created: 2026-07-21
-updated: 2026-07-21
+updated: 2026-08-29
 prd_version: 1
 main_goal: market-feedback
 top_blocker: external
@@ -32,7 +32,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | ID   | Change ID                        | Outcome (user can …)                                              | Prerequisites | PRD refs                          | Status   |
 | ---- | -------------------------------- | ----------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
 | F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | ready    |
-| F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | ready    |
+| F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | in-progress |
 | F-03 | leaflet-vision-ingestion         | (foundation) queued leaflet→structured-data ingestion + CLI trigger | F-01        | FR-006, FR-009                    | blocked  |
 | S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | proposed |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | proposed |
@@ -89,7 +89,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Which OAuth provider(s) to ship first (Google named as the example in FR-002) — Owner: user. Block: no. (Google is a safe working default.)
 - **Risk:** Socialite is not yet installed (baseline), but this is a well-trodden Laravel path with low technical risk. Sequenced as a standalone foundation because login on its own delivers no product value — it only gates S-02/S-03 — and it parallelizes fully with the guest path.
-- **Status:** ready
+- **Status:** in-progress
 
 ### F-03: Leaflet vision-ingestion pipeline
 

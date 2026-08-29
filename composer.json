@@ -12,6 +12,7 @@
         "php": "^8.5",
         "ext-bcmath": "*",
         "laravel/framework": "^13.8",
+        "laravel/socialite": "^5.30",
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
