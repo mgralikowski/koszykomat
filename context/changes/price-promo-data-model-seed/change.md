@@ -1,7 +1,7 @@
 ---
 change_id: price-promo-data-model-seed
 title: Price promo data model seed
-status: implemented
+status: impl_reviewed
 created: 2026-07-25
 updated: 2026-07-25
 archived_at: null
