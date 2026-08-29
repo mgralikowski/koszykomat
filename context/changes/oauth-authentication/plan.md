@@ -388,32 +388,32 @@ Rollback: revert the commits and re-run the reset. There is no data worth preser
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `ddev composer test`
-- [x] 2.2 The new OAuth test passes: `ddev artisan test tests/Feature/Auth/GoogleLoginTest.php`
-- [x] 2.3 Code style passes: `ddev composer lint`
-- [x] 2.4 Routes registered as expected: `ddev artisan route:list --except-vendor`
+- [x] 2.1 Full test suite passes: `ddev composer test` — 629c340
+- [x] 2.2 The new OAuth test passes: `ddev artisan test tests/Feature/Auth/GoogleLoginTest.php` — 629c340
+- [x] 2.3 Code style passes: `ddev composer lint` — 629c340
+- [x] 2.4 Routes registered as expected: `ddev artisan route:list --except-vendor` — 629c340
 
 #### Manual
 
-- [x] 2.5 `/auth/google/redirect` lands on Google's consent screen with the correct app name and scopes
-- [x] 2.6 Returning from Google creates exactly one `users` row and one `oauth_identities` row
-- [x] 2.7 Second login with the same account creates no new rows and reuses the user
-- [x] 2.8 Declining consent returns to `/` with a Polish message, not a stack trace
-- [x] 2.9 `POST /logout` ends the session; the homepage still renders for the guest
+- [x] 2.5 `/auth/google/redirect` lands on Google's consent screen with the correct app name and scopes — 629c340
+- [x] 2.6 Returning from Google creates exactly one `users` row and one `oauth_identities` row — 629c340
+- [x] 2.7 Second login with the same account creates no new rows and reuses the user — 629c340
+- [x] 2.8 Declining consent returns to `/` with a Polish message, not a stack trace — 629c340
+- [x] 2.9 `POST /logout` ends the session; the homepage still renders for the guest — 629c340
 
 ### Phase 3: Header + Polish UI
 
 #### Automated
 
-- [ ] 3.1 Full test suite passes: `ddev composer test`
-- [ ] 3.2 Frontend builds: `ddev npm run build`
-- [ ] 3.3 Code style passes: `ddev composer lint`
-- [ ] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
+- [x] 3.1 Full test suite passes: `ddev composer test`
+- [x] 3.2 Frontend builds: `ddev npm run build`
+- [x] 3.3 Code style passes: `ddev composer lint`
+- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
 
 #### Manual
 
-- [ ] 3.5 Guest header shows „Zaloguj się"; a real-Google round-trip returns showing the name and „Wyloguj"
-- [ ] 3.6 „Wyloguj" returns the header to its guest state
-- [ ] 3.7 Header usable single-column at 375 px with no horizontal scroll
-- [ ] 3.8 All new strings render in correct Polish with proper diacritics
-- [ ] 3.9 The comparison report on the homepage is visually unaffected
+- [x] 3.5 Guest header shows „Zaloguj się"; a real-Google round-trip returns showing the name and „Wyloguj"
+- [x] 3.6 „Wyloguj" returns the header to its guest state
+- [x] 3.7 Header usable single-column at 375 px with no horizontal scroll
+- [x] 3.8 All new strings render in correct Polish with proper diacritics
+- [x] 3.9 The comparison report on the homepage is visually unaffected
