@@ -405,15 +405,15 @@ Rollback: revert the commits and re-run the reset. There is no data worth preser
 
 #### Automated
 
-- [x] 3.1 Full test suite passes: `ddev composer test`
-- [x] 3.2 Frontend builds: `ddev npm run build`
-- [x] 3.3 Code style passes: `ddev composer lint`
-- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php`
+- [x] 3.1 Full test suite passes: `ddev composer test` — 78555c8
+- [x] 3.2 Frontend builds: `ddev npm run build` — 78555c8
+- [x] 3.3 Code style passes: `ddev composer lint` — 78555c8
+- [x] 3.4 Homepage test still passes: `ddev artisan test tests/Feature/HomePageTest.php` — 78555c8
 
 #### Manual
 
-- [x] 3.5 Guest header shows „Zaloguj się"; a real-Google round-trip returns showing the name and „Wyloguj"
-- [x] 3.6 „Wyloguj" returns the header to its guest state
-- [x] 3.7 Header usable single-column at 375 px with no horizontal scroll
-- [x] 3.8 All new strings render in correct Polish with proper diacritics
-- [x] 3.9 The comparison report on the homepage is visually unaffected
+- [x] 3.5 Guest header shows „Zaloguj się"; a real-Google round-trip returns showing the name and „Wyloguj" — 78555c8
+- [x] 3.6 „Wyloguj" returns the header to its guest state — 78555c8
+- [x] 3.7 Header usable single-column at 375 px with no horizontal scroll — 78555c8
+- [x] 3.8 All new strings render in correct Polish with proper diacritics — 78555c8
+- [x] 3.9 The comparison report on the homepage is visually unaffected — 78555c8
