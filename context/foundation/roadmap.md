@@ -6,7 +6,7 @@ created: 2026-07-21
 updated: 2026-08-29
 prd_version: 1
 main_goal: market-feedback
-top_blocker: external
+top_blocker: none
 milestone_id: mvp-promo-aware-basket-verdict
 milestone_seq: 1
 milestone_status: open
@@ -27,7 +27,9 @@ milestone_status: open
 - **Done when:** every F-NN and S-NN below is `done`.
 - **Scope anchors:** FR-001 – FR-009, US-01; NFR mobile-first, NFR <2 s responsiveness, NFR data-freshness transparency, NFR basket privacy; Business Logic; Access Control.
 
-> Adopted `2026-08-29` — this roadmap predates the milestone layer and was wrapped as `M-01` in place. Slices and the dependency graph were preserved verbatim. Item statuses were re-derived from what is actually on disk: F-01 and F-02 are `done` (archived under `context/archive/`), S-01 is `in-progress` (implemented, not yet reviewed or archived), S-02 is `in-progress` (implementation under way).
+> Adopted `2026-08-29` — this roadmap predates the milestone layer and was wrapped as `M-01` in place, with slices and the dependency graph preserved verbatim and item statuses re-derived from what was on disk. Statuses have moved since; the `## At a glance` table is authoritative, not this note.
+>
+> Refreshed `2026-08-29` against `context/research/vision.md` §13: the vision-API vendor question is resolved per-chain, so `F-03` and `S-04` are no longer blocked and `top_blocker` is no longer `external`.
 
 ## Vision recap
 
@@ -39,7 +41,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 
 **S-01: A guest sees a fixed example-basket comparison with a verdict on the homepage.** — This is the validation milestone: the smallest end-to-end flow whose successful delivery proves the core product hypothesis (a promo-aware verdict is correct and worth trusting), placed first because everything else only matters if this works.
 
-> "North star" here means the smallest end-to-end slice that proves the core hypothesis — placed as early as its Prerequisites allow. S-01 needs only a minimal data model + a hand-seed (F-01); it deliberately does not require auth or live leaflet ingestion, so it proves the wedge at the lowest cost and stays unblocked by the outstanding vision-API vendor decision.
+> "North star" here means the smallest end-to-end slice that proves the core hypothesis — placed as early as its Prerequisites allow. S-01 needs only a minimal data model + a hand-seed (F-01); it deliberately does not require auth or live leaflet ingestion, so it proved the wedge at the lowest cost while the leaflet-ingestion question was still open. Delivered — see `## Done`.
 
 ## At a glance
 
@@ -47,11 +49,11 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | ---- | -------------------------------- | ----------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
 | F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | done |
 | F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | done |
-| F-03 | leaflet-vision-ingestion         | (foundation) queued leaflet→structured-data ingestion + CLI trigger | F-01        | FR-006, FR-009                    | blocked  |
+| F-03 | leaflet-vision-ingestion         | (foundation) per-chain leaflet→structured-data ingestion + CLI trigger | F-01      | FR-006, FR-009                    | proposed |
 | S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | done |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | done |
 | S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | proposed |
-| S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | blocked  |
+| S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | proposed |
 
 ## Streams
 
@@ -61,7 +63,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | ------ | -------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | A      | Verdict & demo       | `F-01` → `S-01` → `S-02` → `S-03`         | Market-feedback critical path: prove the verdict (north star) first, then build the account flow on top. `F-02` joins at `S-02`. |
 | B      | Account (OAuth)      | `F-02`                                    | Standalone foundation; joins Stream A at `S-02`. Runs parallel to the entire guest path.                 |
-| C      | Real leaflet data    | `F-03` → `S-04`                           | Blocked by the external dependency (vision-API vendor); isolated behind the seed so it never blocks Stream A. `F-03` branches off `F-01`. |
+| C      | Real leaflet data    | `F-03` → `S-04`                           | Unblocked 2026-08-29: per-chain split — Lidl is exact PDF text, only Biedronka needs a vision model. Isolated behind the seed, so it never blocked Stream A. `F-03` branches off `F-01`. |
 
 ## Baseline
 
@@ -107,17 +109,17 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### F-03: Leaflet vision-ingestion pipeline
 
-- **Outcome:** (foundation) a queued job turns one network's graphic leaflet into structured price/promo rows (with leaflet expiry dates) in F-01's schema; a CLI command can trigger a refresh manually. Architecture leaves room for more source types, but only the graphic-format provider is implemented.
+- **Outcome:** (foundation) a queued job turns each chain's leaflet into structured price/promo rows (with leaflet expiry dates) in F-01's schema, through two parsers — Lidl from its PDF text layer, Biedronka from page images via a vision model — behind one driver interface; a CLI command can trigger a refresh manually.
 - **Change ID:** leaflet-vision-ingestion
 - **PRD refs:** FR-006 (structure a graphic leaflet into the price/promo DB); FR-009 (feeds the nightly refresh); shape-notes `## Forward: technical-roadmap` (CLI trigger, multi-source-ready architecture).
-- **Unlocks:** S-04 (comparisons on real, refreshed data); reduces the top blocking unknown (does vision parsing produce trustworthy structured prices?).
+- **Unlocks:** S-04 (comparisons on real, refreshed data); replaces the hand-seed as the source of every price in the product.
 - **Prerequisites:** F-01 (writes into its schema)
 - **Parallel with:** F-02, S-01, S-02, S-03 (all run on the seed and do not depend on ingestion)
-- **Blockers:** external — the vision-API vendor for leaflet parsing is not yet chosen or contracted (this roadmap's #1 blocker).
+- **Blockers:** — (resolved: `context/research/vision.md` verified both chains are reachable over plain HTTP, so there is no vendor to contract and no browser worker to host)
 - **Unknowns:**
-  - Which vision API, and is its leaflet-parsing accuracy/cost good enough to trust the verdict? — Owner: user. Block: yes.
-- **Risk:** the single riskiest technical piece and the named external dependency. Isolated behind F-01's seed so the entire user-facing path (S-01→S-03) proceeds without it; the verdict's trust guardrail depends on this data being right, so accuracy — not just wiring — is the real unknown.
-- **Status:** blocked
+  - How accurately does a vision model read Biedronka's page images — enough to price a verdict, or only enough with a `needs_review` gate? — Owner: user. Block: no. (Measured in F-03's own phase 1 against a hand-labelled gold set; the research pre-commits the decision rule and a Lidl-only fallback, so an answer either way still ships.)
+- **Risk:** scope grew to two parsers, but risk dropped sharply: Lidl's PDF text layer is exact by construction, so half the corpus carries no extraction risk at all. The remaining risk is confident-but-wrong numbers from Biedronka's images — the failure the PRD guardrail exists to catch — which the plan must answer with deterministic post-extraction validation and provenance columns on `price_entries`, not with model confidence.
+- **Status:** proposed
 
 ## Slices
 
@@ -165,11 +167,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **PRD refs:** FR-006, FR-009; Success Criteria guardrail ("the verdict never lies"); NFR data-freshness transparency.
 - **Prerequisites:** F-03, S-01
 - **Parallel with:** S-02, S-03 (they run on the seed; this slice swaps the data source underneath them)
-- **Blockers:** external — the vision-API vendor decision (inherited from F-03).
+- **Blockers:** — (F-03 is an ordinary prerequisite, not a blocker)
 - **Unknowns:**
-  - Is vision-parsed data reliable enough that the verdict can be trusted, or must the "no data" fallback fire more aggressively? — Owner: user/team. Block: yes.
-- **Risk:** this is where the trust guardrail becomes real — expiry and completeness checks must gate the verdict so stale/partial data yields "no data", not a confident lie. Blocked on the same external vision-API decision as F-03; until then the product demonstrably runs on the seed.
-- **Status:** blocked
+  - How aggressively must the "no data" fallback fire on Biedronka? — Owner: user/team. Block: no. (Falls out of F-03 phase 1's measurement.)
+- **Risk:** this is where the trust guardrail becomes real — expiry and completeness checks must gate the verdict so stale/partial data yields "no data", not a confident lie. It also has a partial-ship path the roadmap previously hid: because Lidl's data is exact, this slice can ship on real Lidl prices with Biedronka still on the seed, rather than being all-or-nothing on vision accuracy.
+- **Status:** proposed
 
 ## Backlog Handoff
 
@@ -177,18 +179,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | ---------- | -------------------------------- | ---------------------------------------------------------- | --------------------- | ----- |
 | F-01       | price-promo-data-model-seed      | Price/promo data model + example-basket seed              | yes                   | No prerequisites; unlocks the north star. Recommended first. |
 | F-02       | oauth-authentication             | OAuth login (Socialite) + open registration              | yes                   | Independent; parallel with the guest path. |
-| F-03       | leaflet-vision-ingestion         | Leaflet vision-ingestion pipeline + CLI trigger          | no                    | Blocked: vision-API vendor not chosen (Open Roadmap Q3). |
+| F-03       | leaflet-vision-ingestion         | Per-chain leaflet ingestion (Lidl PDF + Biedronka vision) | yes                  | Unblocked. Plan must carry `price_entries` provenance columns + the validation gate (`context/research/vision.md` §9). |
 | S-01       | guest-fixed-basket-comparison    | Guest homepage fixed-basket comparison + promo rule engine | no                  | Needs F-01 done first; then plan this (north star). |
 | S-02       | basket-builder-comparison-report | Basket builder + full Lidl vs Biedronka report            | no                    | Needs S-01 + F-02. |
 | S-03       | save-and-revisit-basket          | Save & revisit basket (owner-only)                        | no                    | Needs S-02. |
-| S-04       | nightly-refreshed-real-data      | Comparisons on real nightly-refreshed data + "no data"    | no                    | Blocked with F-03 (Open Roadmap Q3). |
+| S-04       | nightly-refreshed-real-data      | Comparisons on real nightly-refreshed data + "no data"    | no                    | Needs F-03 first. Has a Lidl-only partial-ship path. |
 
 ## Open Roadmap Questions
 
 1. **Traffic order-of-magnitude (qps)?** — Owner: user. Block: `S-02` (informs the <2s budget under concurrency; does not gate planning — a single local-MySQL comparison is comfortably within budget). From PRD Open Question 1.
-2. **Data volume (price/promo entries per week for two chains)?** — Owner: user. Block: `F-01`, `F-03` (sizing of schema + ingestion; does not gate a minimal schema). From PRD Open Question 2.
-3. **Which vision-API vendor for leaflet ingestion, and is its parsing accuracy/cost acceptable?** — Owner: user. Block: `F-03`, `S-04`. This is the roadmap's #1 blocker; resolving it promotes the entire real-data stream. Everything else runs on the seed until then.
-4. **Which OAuth provider(s) to ship first?** — Owner: user. Block: `F-02` weakly (Google is a safe default; does not gate planning).
+2. ~~**Data volume (price/promo entries per week for two chains)?**~~ — **Resolved 2026-08-29** (`context/research/vision.md` §7): Lidl ~95 pages/week from a PDF text layer, Biedronka ~53 pages/week as images for the main leaflet; Biedronka runs 13 concurrent leaflets, so MVP ingests the main food leaflet only.
+3. ~~**Which vision-API vendor for leaflet ingestion, and is its parsing accuracy/cost acceptable?**~~ — **Resolved 2026-08-29** (`context/research/vision.md` §1, §8): the question was per-chain, not global. Lidl needs no vendor at all (exact PDF text); Biedronka uses Gemini 3.5 Flash-Lite, with Claude Haiku 4.5 and Mistral OCR 4.1 measured alongside it in F-03 phase 1. Vision spend lands under $2/month, so cost is not a discriminator — accuracy and auditability are.
+4. ~~**Which OAuth provider(s) to ship first?**~~ — **Resolved**: Google shipped with F-02.
 
 ## Parked
 
