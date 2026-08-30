@@ -1,10 +1,10 @@
 ---
 change_id: conditional-unit-price-mechanic
 title: Conditional unit price — the fifth promo mechanic
-status: implemented
+status: archived
 created: 2026-08-30
 updated: 2026-08-30
-archived_at: null
+archived_at: 2026-08-30T18:27:27Z
 ---
 
 ## Notes

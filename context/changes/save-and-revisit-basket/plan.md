@@ -532,15 +532,15 @@ CLAUDE.md) — run `ddev artisan migrate` locally against a fresh database first
 
 #### Automated
 
-- [x] 3.1 The load-fidelity test passes: `ddev artisan test tests/Feature/Basket/SavedBasketLoadTest.php`
-- [x] 3.2 Full suite passes: `ddev composer test`
-- [x] 3.3 Code style passes: `ddev composer lint`
+- [x] 3.1 The load-fidelity test passes: `ddev artisan test tests/Feature/Basket/SavedBasketLoadTest.php` — a04920a
+- [x] 3.2 Full suite passes: `ddev composer test` — a04920a
+- [x] 3.3 Code style passes: `ddev composer lint` — a04920a
 
 #### Manual
 
-- [x] 3.4 Loading a saved basket restores exactly the saved products and quantities
-- [x] 3.5 "Porównaj" after a load produces a verdict describing the loaded basket
-- [x] 3.6 No stale report renders directly after a load
-- [x] 3.7 Replace warning appears only when the session basket is non-empty
-- [x] 3.8 A basket saved before a refresh re-compares against current leaflet windows
-- [x] 3.9 Whole flow works at phone width
+- [x] 3.4 Loading a saved basket restores exactly the saved products and quantities — a04920a
+- [x] 3.5 "Porównaj" after a load produces a verdict describing the loaded basket — a04920a
+- [x] 3.6 No stale report renders directly after a load — a04920a
+- [x] 3.7 Replace warning appears only when the session basket is non-empty — a04920a
+- [x] 3.8 A basket saved before a refresh re-compares against current leaflet windows — a04920a
+- [x] 3.9 Whole flow works at phone width — a04920a
