@@ -52,7 +52,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | F-03 | leaflet-vision-ingestion         | (foundation) per-chain leaflet→structured-data ingestion + CLI trigger | F-01      | FR-006, FR-009                    | done |
 | S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | done |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | done |
-| S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | in-progress |
+| S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | done |
 | S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | proposed |
 
 ## Streams
@@ -158,7 +158,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** mostly standard persistence + ownership scoping; low technical risk. The load-bearing requirement is the privacy NFR — saved baskets must never leak across accounts — so authorization scoping is the thing to get right.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-04: Comparisons on real, nightly-refreshed leaflet data
 
@@ -219,3 +219,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: a guest sees, on the homepage, a fixed example-basket comparison of Lidl vs Biedronka with a "where is it cheaper" verdict and all four promo mechanics (simple promo price, 1+1 free, second-for-1-PLN/grosz, loyalty-card price) correctly priced.** — Archived 2026-08-29 → `context/archive/2026-07-25-guest-fixed-basket-comparison/`. Lesson: —.
 - **S-02: a logged-in user builds a basket (products + optional quantities, default 1) and generates the full Lidl vs Biedronka report: verdict, priced promo mechanics (including the forced overbuy shown as a cost), explicit matched-product pairs (brand, weight difference), and the visible from–to leaflet-validity window per price.** — Archived 2026-08-29 → `context/archive/2026-08-29-basket-builder-comparison-report/`. Lesson: —.
 - **F-03: (foundation) a queued job turns each chain's leaflet into structured price/promo rows (with leaflet expiry dates) in F-01's schema, through two parsers — Lidl from its PDF text layer, Biedronka from page images via a vision model — behind one driver interface; a CLI command can trigger a refresh manually.** — Archived 2026-08-30 → `context/archive/2026-08-30-leaflet-vision-ingestion/`. Lesson: —.
+- **S-03: a user saves a basket to their account and returns later to re-compare it after the data has refreshed; saved baskets are visible only to their owner.** — Archived 2026-08-30 → `context/archive/2026-08-30-save-and-revisit-basket/`. Lesson: —.

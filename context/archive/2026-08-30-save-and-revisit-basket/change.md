@@ -1,10 +1,10 @@
 ---
 change_id: save-and-revisit-basket
 title: Save and revisit a basket
-status: implemented
+status: archived
 created: 2026-08-30
 updated: 2026-08-30
-archived_at: null
+archived_at: 2026-08-30T18:31:01Z
 ---
 
 ## Notes
