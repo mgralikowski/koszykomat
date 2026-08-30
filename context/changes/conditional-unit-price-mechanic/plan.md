@@ -171,6 +171,12 @@ F-03 phase 2 maps "przy zakupie N" onto `second_for_fixed` because it was the le
 - The flagged-row count drops, and the rows that become trusted carry a `promo_price` below their `regular_price`
 - Spot-check three ingested conditional offers against the leaflet PDF — the required quantity and the conditional price match what is printed
 
+**Superseded criterion (2026-08-30)**: success criterion 2.5 — *"the flagged-row count drops and newly trusted rows carry a `promo_price` below their `regular_price`"* — **cannot be met, and not because the work is unfinished.** It was written on the assumption that the Lidl parser would read a promotional price for a conditional offer. A later decision inside F-03 removed that assumption: the parser now reads only what Lidl itself labels, and Lidl labels the regular price ("Cena poza promocją") and the purchase condition ("przy zakupie N") but never the promotional price, which exists only as large type in a separate tile. Guessing it produced plausible numbers belonging to the neighbouring product.
+
+So every ingested `conditional_unit_price` row carries a null `promo_price`, is flagged by the validation gate, and surfaces as "brak danych". The flagged count does not drop either: before this change the same offers were written as `second_for_fixed` with no `second_item_price` and were flagged for that instead. What changed is the mechanic's name and its honesty, not the completeness of the data.
+
+Criterion 2.5 is left unticked deliberately rather than reinterpreted, so the record shows a criterion the change did not meet rather than one quietly redefined until it passed. Reading a conditional offer's promotional price needs a different source than the PDF text layer — see `context/archive/2026-08-30-leaflet-vision-ingestion/measurement.md`.
+
 **Implementation Note**: After completing this phase and all automated verification passes, pause here for manual confirmation from the human that the manual testing was successful.
 
 ---
@@ -244,6 +250,6 @@ The six existing `second_for_fixed` rows from F-03's mapping are left alone: all
 
 #### Manual
 
-- [ ] 2.4 A real Lidl ingest writes `conditional_unit_price` rows where it previously wrote flagged `second_for_fixed` ones
+- [x] 2.4 A real Lidl ingest writes `conditional_unit_price` rows where it previously wrote flagged `second_for_fixed` ones — 88eef4d
 - [ ] 2.5 The flagged-row count drops and newly trusted rows carry a `promo_price` below their `regular_price`
-- [ ] 2.6 Three ingested conditional offers spot-checked against the leaflet PDF — quantity and price match
+- [x] 2.6 Three ingested conditional offers spot-checked against the leaflet PDF — quantity and price match — 88eef4d
