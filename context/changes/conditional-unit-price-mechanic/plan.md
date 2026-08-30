@@ -220,27 +220,27 @@ The six existing `second_for_fixed` rows from F-03's mapping are left alone: all
 
 #### Automated
 
-- [x] 1.1 Full test suite passes: `ddev composer test`
-- [x] 1.2 The five mandatory mechanic tests pass: `ddev artisan test tests/Feature/Pricing/BasketComparatorTest.php`
-- [x] 1.3 Seed integrity tests pass: `ddev artisan test tests/Feature/Database/PricePromoSeedTest.php`
-- [x] 1.4 Fresh migrate and seed succeed: `ddev artisan migrate:fresh --seed`
-- [x] 1.5 Code style passes: `ddev composer lint`
-- [x] 1.6 No exhaustive `match` over `PromoType` is missing the new case
+- [x] 1.1 Full test suite passes: `ddev composer test` — 81635a9
+- [x] 1.2 The five mandatory mechanic tests pass: `ddev artisan test tests/Feature/Pricing/BasketComparatorTest.php` — 81635a9
+- [x] 1.3 Seed integrity tests pass: `ddev artisan test tests/Feature/Database/PricePromoSeedTest.php` — 81635a9
+- [x] 1.4 Fresh migrate and seed succeed: `ddev artisan migrate:fresh --seed` — 81635a9
+- [x] 1.5 Code style passes: `ddev composer lint` — 81635a9
+- [x] 1.6 No exhaustive `match` over `PromoType` is missing the new case — 81635a9
 
 #### Manual
 
-- [x] 1.7 The homepage still names the same winner as before the seed change, with the same totals
-- [x] 1.8 The new mechanic's Polish label renders correctly on the affected line
-- [x] 1.9 A quantity below the required one shows "Promocja wymaga min. N szt. — przy tej ilości nie obowiązuje"
-- [x] 1.10 Hand-check in tinker: 3 items at 4,00 conditional with 6,00 regular total 12,00; 4 items total 18,00
+- [x] 1.7 The homepage still names the same winner as before the seed change, with the same totals — 81635a9
+- [x] 1.8 The new mechanic's Polish label renders correctly on the affected line — 81635a9
+- [x] 1.9 A quantity below the required one shows "Promocja wymaga min. N szt. — przy tej ilości nie obowiązuje" — 81635a9
+- [x] 1.10 Hand-check in tinker: 3 items at 4,00 conditional with 6,00 regular total 12,00; 4 items total 18,00 — 81635a9
 
 ### Phase 2: Correct F-03's parser mapping
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `ddev composer test`
-- [ ] 2.2 Code style passes: `ddev composer lint`
-- [ ] 2.3 No parser path still emits `SecondForFixed` for a "przy zakupie" tile
+- [x] 2.1 Full test suite passes: `ddev composer test`
+- [x] 2.2 Code style passes: `ddev composer lint`
+- [x] 2.3 No parser path still emits `SecondForFixed` for a "przy zakupie" tile
 
 #### Manual
 

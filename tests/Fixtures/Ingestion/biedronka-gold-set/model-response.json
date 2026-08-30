@@ -1,0 +1,49 @@
+{
+  "offers": [
+    {
+      "name": "Mleko UHT 3,2% Mleczna Dolina, 1 l",
+      "regular_price": "3.29",
+      "promo_type": "loyalty_card",
+      "promo_price": "1.49",
+      "required_quantity": null,
+      "second_item_price": null,
+      "confidence": 0.95,
+      "box_2d": [
+        253,
+        62,
+        518,
+        240
+      ]
+    },
+    {
+      "name": "Mleko UHT 3,2%, 1 l: Łaciate, Wypasione, Mlekovita Łączka, Łowickie Łaciate, Wypasione",
+      "regular_price": "4.49",
+      "promo_type": "loyalty_card",
+      "promo_price": "1.99",
+      "required_quantity": null,
+      "second_item_price": null,
+      "confidence": 0.95,
+      "box_2d": [
+        607,
+        60,
+        939,
+        239
+      ]
+    },
+    {
+      "name": "Mlekovita Łączka, Łowickie",
+      "regular_price": "3.69",
+      "promo_type": "loyalty_card",
+      "promo_price": "1.99",
+      "required_quantity": null,
+      "second_item_price": null,
+      "confidence": 0.95,
+      "box_2d": [
+        607,
+        60,
+        939,
+        239
+      ]
+    }
+  ]
+}

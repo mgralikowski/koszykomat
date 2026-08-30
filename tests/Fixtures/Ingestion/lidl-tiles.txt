@@ -1,0 +1,40 @@
+# Verbatim tiles from the Lidl leaflet valid 2026-08-26..2026-08-30, as
+# App\Ingestion\Drivers\Lidl\PdfTextParser rebuilds them from getDataTm().
+# One tile per block; blocks separated by a line containing only "---".
+# Kept as real text so a layout change in the leaflet shows up here as a
+# failing test rather than as silently missing offers in production.
+---
+MLEKOVITA
+Masło z Polskiej Mleczarni 82%
+200 g
+-60%
+przy zakupie 3
+Aktywuj kupon
+Cena przed obniżką/cena poza promocją: 4,99/opak., 100 g = 2,50
+Limit: 3 opak. na kupon.
+---
+Mleko UHT 3,2% Łączka
+1 L
+Cena poza promocją: 3,30/opak.
+* cena za 1 opak. przy zakupie 6 opak.
+lub wielokrotności 6 opak.
+Najniższa cena z 30 dni przed obniżką: 1,55/opak.
+Limit: 24 opak. na paragon.
+---
+Czekolada mleczna
+z bakaliami
+100 g
+2+1 gratis
+Cena poza promocją: 4,49/opak.
+---
+JACOBS
+Café Crema lub Espresso, kawa ziarnista
+1 kg
+Trzeci, najtańszy za grosz.
+Cena poza promocją: 89,99/opak.
+---
+Żelki Blublo
+160 g
+różne rodzaje
+100 g = 3,12
+4,99

@@ -1,0 +1,124 @@
+{
+  "_": "Verified by hand on 2026-08-30 against the page images of codziennie-niskie-ceny-p-oferta-od-27-08. Corrections were applied to the model's initial reading (purchase quantities on pages 3 and 4, the Lavazza size). Treat this as the measurement's ground truth; re-verify if the leaflet is ever re-fetched.",
+  "leaflet": "codziennie-niskie-ceny-p-oferta-od-27-08",
+  "valid_from": "2026-08-27",
+  "valid_to": "2026-09-02",
+  "verified": true,
+  "verified_by": "Marek Gralikowski",
+  "verified_at": "2026-08-30",
+  "pages": {
+    "3": {
+      "complete": true,
+      "offers": [
+        {
+          "name": "Kaszanka Sokołów, 500 g: z boczkiem, z wątróbką",
+          "regular_price": "10.99",
+          "promo_type": "one_plus_one",
+          "promo_price": null,
+          "required_quantity": 2,
+          "second_item_price": "5.50"
+        },
+        {
+          "name": "Brykiet z węgla drzewnego, 2,5 kg różne rodzaje",
+          "regular_price": "16.99",
+          "promo_type": "loyalty_card",
+          "promo_price": "7.99",
+          "required_quantity": 2,
+          "second_item_price": null
+        }
+      ]
+    },
+    "4": {
+      "complete": true,
+      "offers": [
+        {
+          "name": "Mleko UHT 3,2% Mleczna Dolina, 1 l",
+          "regular_price": "3.29",
+          "promo_type": "loyalty_card",
+          "promo_price": "1.49",
+          "required_quantity": 6,
+          "second_item_price": null
+        },
+        {
+          "name": "Mleko UHT 3,2%, 1 l: Łaciate, Wypasione, Mlekovita Łączka, Łowickie Łaciate, Wypasione",
+          "regular_price": "4.49",
+          "promo_type": "loyalty_card",
+          "promo_price": "1.99",
+          "required_quantity": 3,
+          "second_item_price": null
+        },
+        {
+          "name": "Mlekovita Łączka, Łowickie",
+          "regular_price": "3.69",
+          "promo_type": "loyalty_card",
+          "promo_price": "1.99",
+          "required_quantity": null,
+          "second_item_price": null
+        }
+      ]
+    },
+    "5": {
+      "complete": true,
+      "offers": [
+        {
+          "name": "WSZYSTKIE PACZKOWANE PARÓWKI",
+          "regular_price": null,
+          "promo_type": "second_for_fixed",
+          "promo_price": null,
+          "required_quantity": 2,
+          "second_item_price": "1"
+        },
+        {
+          "name": "Cukier biały, 1 kg: Królewski, Polski Cukier, Diamant, Sweet Family",
+          "regular_price": "1.99",
+          "promo_type": "loyalty_card",
+          "promo_price": null,
+          "required_quantity": null,
+          "second_item_price": null
+        }
+      ]
+    },
+    "7": {
+      "complete": true,
+      "offers": [
+        {
+          "name": "Kawa ziarnista Lavazza Crema e Gusto Classico, 1 kg",
+          "regular_price": "99.99",
+          "promo_type": "loyalty_card",
+          "promo_price": "59.99",
+          "required_quantity": null,
+          "second_item_price": null
+        },
+        {
+          "name": "Sok 100% Riviva, 1 l: pomarańcza, mandarynka",
+          "regular_price": "4.79",
+          "promo_type": "loyalty_card",
+          "promo_price": "2.49",
+          "required_quantity": null,
+          "second_item_price": null
+        },
+        {
+          "name": "Wszystkie produkty Vizir",
+          "regular_price": null,
+          "promo_type": "second_for_fixed",
+          "promo_price": null,
+          "required_quantity": 2,
+          "second_item_price": "1"
+        }
+      ]
+    },
+    "9": {
+      "complete": true,
+      "offers": [
+        {
+          "name": "Woda źródlana Żywiec Zdrój, 6x1,75 l",
+          "regular_price": "3.35",
+          "promo_type": "loyalty_card",
+          "promo_price": "1.68",
+          "required_quantity": null,
+          "second_item_price": null
+        }
+      ]
+    }
+  }
+}

@@ -375,54 +375,54 @@ Production has never been migrated with real data beyond the seed, and the F-02 
 
 #### Automated
 
-- [x] 1.1 Migration applies on MySQL: `ddev artisan migrate`
-- [x] 1.2 Migration applies from scratch including SQLite: `ddev artisan migrate:fresh --seed` and `ddev composer test`
-- [x] 1.3 Full test suite passes: `ddev composer test`
-- [x] 1.4 New gate tests pass: `ddev artisan test tests/Feature/Ingestion/PriceEntryGateTest.php`
-- [x] 1.5 Trust guardrail test passes: `ddev artisan test tests/Feature/Pricing/BasketComparatorTrustTest.php`
-- [x] 1.6 Code style passes: `ddev composer lint`
-- [x] 1.7 No production read of prices bypasses the composed scope — no `validOn` hit inside `app/Pricing/`
+- [x] 1.1 Migration applies on MySQL: `ddev artisan migrate` — 9fa1d32
+- [x] 1.2 Migration applies from scratch including SQLite: `ddev artisan migrate:fresh --seed` and `ddev composer test` — 9fa1d32
+- [x] 1.3 Full test suite passes: `ddev composer test` — 9fa1d32
+- [x] 1.4 New gate tests pass: `ddev artisan test tests/Feature/Ingestion/PriceEntryGateTest.php` — 9fa1d32
+- [x] 1.5 Trust guardrail test passes: `ddev artisan test tests/Feature/Pricing/BasketComparatorTrustTest.php` — 9fa1d32
+- [x] 1.6 Code style passes: `ddev composer lint` — 9fa1d32
+- [x] 1.7 No production read of prices bypasses the composed scope — no `validOn` hit inside `app/Pricing/` — 9fa1d32
 
 #### Manual
 
-- [x] 1.8 `price_entries` carries the four new columns with `needs_review` NOT NULL default false
-- [x] 1.9 The homepage still renders the seeded comparison unchanged
-- [x] 1.10 Flipping one seeded row to `needs_review = true` makes the homepage say "brak danych" and name that product
+- [x] 1.8 `price_entries` carries the four new columns with `needs_review` NOT NULL default false — 9fa1d32
+- [x] 1.9 The homepage still renders the seeded comparison unchanged — 9fa1d32
+- [x] 1.10 Flipping one seeded row to `needs_review = true` makes the homepage say "brak danych" and name that product — 9fa1d32
 
 ### Phase 2: Ingestion for both chains
 
 #### Automated
 
-- [ ] 2.1 Platform requirements satisfied with the new packages: `ddev composer check-platform-reqs`
-- [ ] 2.2 Full test suite passes: `ddev composer test`
-- [ ] 2.3 Lidl parser fixture test passes: `ddev artisan test tests/Feature/Ingestion/PdfTextParserTest.php`
-- [ ] 2.4 Code style passes: `ddev composer lint`
-- [ ] 2.5 Command registered: `ddev artisan list | grep leaflets:ingest`
-- [ ] 2.6 Dry run completes without writing and leaves row counts unchanged
+- [x] 2.1 Platform requirements satisfied with the new packages: `ddev composer check-platform-reqs`
+- [x] 2.2 Full test suite passes: `ddev composer test`
+- [x] 2.3 Lidl parser fixture test passes: `ddev artisan test tests/Feature/Ingestion/PdfTextParserTest.php`
+- [x] 2.4 Code style passes: `ddev composer lint`
+- [x] 2.5 Command registered: `ddev artisan list | grep leaflets:ingest`
+- [x] 2.6 Dry run completes without writing and leaves row counts unchanged
 
 #### Manual
 
-- [ ] 2.7 A real Lidl ingest writes a leaflet and priced rows with `source` and `confidence = 1.00`
-- [ ] 2.8 A real Biedronka ingest writes rows carrying `box_2d` and a model-derived confidence
-- [ ] 2.9 Five ingested Lidl prices spot-checked against the leaflet PDF — they match exactly
-- [ ] 2.10 The homepage renders the example basket from ingested prices with correct validity windows
-- [ ] 2.11 Re-running the command changes no row counts (idempotent upsert)
-- [ ] 2.12 Assets appear under `storage/app/leaflets/` and a leaflet older than two months is pruned
-- [ ] 2.13 An unmatched offer is skipped silently, not written as an orphan
+- [x] 2.7 A real Lidl ingest writes a leaflet and priced rows with `source` and `confidence = 1.00`
+- [x] 2.8 A real Biedronka ingest writes rows carrying `box_2d` and a model-derived confidence
+- [x] 2.9 Five ingested Lidl prices spot-checked against the leaflet PDF — they match exactly
+- [x] 2.10 The homepage renders the example basket from ingested prices with correct validity windows
+- [x] 2.11 Re-running the command changes no row counts (idempotent upsert)
+- [x] 2.12 Assets appear under `storage/app/leaflets/` and a leaflet older than two months is pruned
+- [x] 2.13 An unmatched offer is skipped silently, not written as an orphan
 
 ### Phase 3: Gold set and the accuracy decision
 
 #### Automated
 
-- [ ] 3.1 Full test suite passes: `ddev composer test`
-- [ ] 3.2 Offer-mapping regression test passes: `ddev artisan test tests/Feature/Ingestion/VisionOfferMappingTest.php`
-- [ ] 3.3 Code style passes: `ddev composer lint`
-- [ ] 3.4 Measurement command runs and reports all three scores: `ddev artisan leaflets:measure-vision`
+- [x] 3.1 Full test suite passes: `ddev composer test`
+- [x] 3.2 Offer-mapping regression test passes: `ddev artisan test tests/Feature/Ingestion/VisionOfferMappingTest.php`
+- [x] 3.3 Code style passes: `ddev composer lint`
+- [x] 3.4 Measurement command runs and reports all three scores: `ddev artisan leaflets:measure-vision`
 
 #### Manual
 
-- [ ] 3.5 The gold set covers all four mechanics and every offer on its five pages is hand-verified
-- [ ] 3.6 The three scores are recorded in `measurement.md` with the model and date
-- [ ] 3.7 The branch that fired matches the rule as written, not adjusted after seeing the numbers
+- [x] 3.5 The gold set covers all four mechanics and every offer on its five pages is hand-verified
+- [x] 3.6 The three scores are recorded in `measurement.md` with the model and date
+- [x] 3.7 The branch that fired matches the rule as written, not adjusted after seeing the numbers
 - [ ] 3.8 If Biedronka ships: five ingested Biedronka prices spot-checked against the page images
 - [ ] 3.9 If Biedronka does not ship: ingest writes Lidl rows only and the homepage shows "brak danych" for Biedronka without naming a winner
