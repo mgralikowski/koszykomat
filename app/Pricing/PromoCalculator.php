@@ -6,7 +6,7 @@ use App\Enums\PromoType;
 use App\Models\PriceEntry;
 
 /**
- * Prices one product listing under one promo mechanic — the single place the four FR-007
+ * Prices one product listing under one promo mechanic — the single place the five FR-007
  * mechanics are encoded.
  *
  * Semantics: the shopper is charged for exactly the quantity they asked for. A conditional
@@ -32,6 +32,7 @@ final class PromoCalculator
             PromoType::None => new LineCost($regular->times($quantity), PromoType::None, false),
             PromoType::Simple, PromoType::LoyaltyCard => $this->flatPromoPrice($entry, $quantity, $regular),
             PromoType::OnePlusOne, PromoType::SecondForFixed => $this->conditional($entry, $quantity, $regular),
+            PromoType::ConditionalUnitPrice => $this->conditionalUnitPrice($entry, $quantity, $regular),
         };
     }
 
@@ -91,6 +92,44 @@ final class PromoCalculator
         $groupCost = $regular->plus($secondItemPrice->times($requiredQuantity - 1));
 
         $total = $groupCost->times($groups)->plus($regular->times($remainder));
+
+        return new LineCost($total, $entry->promo_type, $groups === 0);
+    }
+
+    /**
+     * A per-unit price that only applies from `required_quantity` items up — "cena za 1 opak. przy
+     * zakupie 3 opak.", the mechanic Lidl leads with.
+     *
+     * The group cost is deliberately NOT the one conditional() uses. There, one item in the group
+     * pays the shelf price and the rest are discounted; here EVERY item in a complete group pays
+     * the conditional unit price. Reusing that formula would overcharge by almost a full regular
+     * price per group and still return a plausible-looking number — which is the failure mode this
+     * product cannot absorb.
+     *
+     * Below the required quantity the promotion simply does not exist: the shopper pays the shelf
+     * price and the report says the promo did not apply, rather than quietly pricing an offer they
+     * are not entitled to.
+     */
+    private function conditionalUnitPrice(PriceEntry $entry, int $quantity, Money $regular): ?LineCost
+    {
+        $requiredQuantity = $entry->required_quantity;
+
+        if ($requiredQuantity === null || $requiredQuantity < 2 || $entry->promo_price === null) {
+            return null;
+        }
+
+        $unit = Money::fromDecimalString((string) $entry->promo_price);
+
+        // The same clamp the other mechanics apply: a shopper can always decline a promotion and
+        // pay the shelf price, so a conditional price above the regular one is never what they pay.
+        if ($regular->isLessThan($unit)) {
+            $unit = $regular;
+        }
+
+        $groups = intdiv($quantity, $requiredQuantity);
+        $remainder = $quantity % $requiredQuantity;
+
+        $total = $unit->times($groups * $requiredQuantity)->plus($regular->times($remainder));
 
         return new LineCost($total, $entry->promo_type, $groups === 0);
     }

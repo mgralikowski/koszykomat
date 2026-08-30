@@ -25,6 +25,13 @@ enum PromoType: string
     case OnePlusOne = 'one_plus_one';
     case SecondForFixed = 'second_for_fixed';
     case LoyaltyCard = 'loyalty_card';
+    /**
+     * A per-unit price that only applies from `required_quantity` items up — "cena za 1 opak.
+     * przy zakupie 3 opak.". Added in PRD FR-007 v2 after the first real Lidl ingestion showed it
+     * is that chain's dominant mechanic: "przy zakupie N" appears 94× in one leaflet, against 25
+     * for "gratis" and 8 for "za grosz" combined.
+     */
+    case ConditionalUnitPrice = 'conditional_unit_price';
 
     /**
      * Polish label for the comparison report (user-facing string).
@@ -37,6 +44,7 @@ enum PromoType: string
             self::OnePlusOne => '1+1 gratis',
             self::SecondForFixed => 'drugi produkt za',
             self::LoyaltyCard => 'cena z kartą',
+            self::ConditionalUnitPrice => 'cena przy zakupie wielu szt.',
         };
     }
 
@@ -51,6 +59,10 @@ enum PromoType: string
             self::None => [],
             self::Simple, self::LoyaltyCard => ['promo_price'],
             self::OnePlusOne, self::SecondForFixed => ['required_quantity', 'second_item_price'],
+            // The first mechanic to need both: a discounted unit price AND the quantity that
+            // unlocks it. Every other mechanic treats these two as mutually exclusive, which is
+            // exactly why this matrix lives in PHP rather than in a DDL check constraint.
+            self::ConditionalUnitPrice => ['promo_price', 'required_quantity'],
         };
     }
 
@@ -107,7 +119,7 @@ enum PromoType: string
     ): array {
         $violations = [];
 
-        if ($this === self::Simple || $this === self::LoyaltyCard) {
+        if ($this === self::Simple || $this === self::LoyaltyCard || $this === self::ConditionalUnitPrice) {
             if ($promoPrice !== null && ! $promoPrice->isLessThan($regularPrice)) {
                 $violations[] = 'promo_price is not below regular_price';
             }

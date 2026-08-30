@@ -154,11 +154,14 @@ class ExampleBasketSeeder extends Seeder
      * | mleko-32-1l             |  2  | 1+1 gratis        →  3.49       | promo 2.99/szt      →  5.98      | Lidl      |
      * | maslo-extra-200g        |  1  | regular           →  7.99       | z kartą 6.49        →  6.49      | Biedronka |
      * | kawa-ziarnista-1kg      |  1  | promo 32.99       → 32.99       | regular 44.99       → 44.99      | Lidl      |
-     * | czekolada-mleczna-100g  |  4  | regular 4.49      → 17.96       | drugi za grosz      → 10.00      | Biedronka |
+     * | czekolada-mleczna-100g  |  4  | 3.99 przy zakupie 4 → 15.96     | drugi za grosz      → 10.00      | Biedronka |
      *
-     * Totals: Lidl 62.43 vs Biedronka 67.46 (with the loyalty card) — close, not tied, and split
+     * Totals: Lidl 60.43 vs Biedronka 67.46 (with the loyalty card) — close, not tied, and split
      * two lines each, so the verdict is a real computation. Without the card Biedronka is 69.46,
      * which is the "card moves the number" case the report has to be honest about.
+     *
+     * Lidl was 62.43 until the fifth mechanic (conditional unit price) was seeded onto its
+     * chocolate line on 2026-08-30; the winner is unchanged, the margin widened by 2.00.
      *
      * @return array<string, array{name: string, listings: array<string, array{name: string, brand: ?string, size_label: ?string, prices: list<array<string, mixed>>}>}>
      */
@@ -276,6 +279,17 @@ class ExampleBasketSeeder extends Seeder
                             [
                                 'regular_price' => '4.49',
                                 'promo_type' => PromoType::None,
+                            ],
+                            // The fifth mechanic (PRD FR-007 v2), on the one line whose basket
+                            // quantity is a whole multiple of a plausible required quantity. It
+                            // fires here — 4 × 3.99 = 15.96 against 4 × 4.49 = 17.96 — so the demo
+                            // actually shows what "cena za 1 szt. przy zakupie 4 szt." does, rather
+                            // than merely carrying a row that satisfies the seed test.
+                            [
+                                'regular_price' => '4.49',
+                                'promo_type' => PromoType::ConditionalUnitPrice,
+                                'promo_price' => '3.99',
+                                'required_quantity' => 4,
                             ],
                         ],
                     ],

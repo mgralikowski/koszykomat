@@ -28,8 +28,10 @@ class HomePageTest extends TestCase
         $response->assertSee('Lidl');
         $response->assertSee('Biedronka');
 
-        // The engine's figures for the seeded basket, straight off the page.
-        $response->assertSee('62,43 zł');
+        // The engine's figures for the seeded basket, straight off the page. Lidl moved from
+        // 62,43 to 60,43 on 2026-08-30, when the fifth mechanic (conditional unit price) was
+        // seeded onto its chocolate line — the winner is unchanged, the margin widened by 2,00.
+        $response->assertSee('60,43 zł');
         $response->assertSee('69,46 zł');
         $response->assertSee('67,46 zł');
         $response->assertSee('Taniej w');

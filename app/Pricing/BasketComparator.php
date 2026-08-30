@@ -181,8 +181,11 @@ final class BasketComparator
             PromoType::None => 0,
             PromoType::Simple => 1,
             PromoType::LoyaltyCard => 2,
-            PromoType::OnePlusOne => 3,
-            PromoType::SecondForFixed => 4,
+            // "this price needs N items" explains itself more plainly than "buy one get one",
+            // but less plainly than a straight card price.
+            PromoType::ConditionalUnitPrice => 3,
+            PromoType::OnePlusOne => 4,
+            PromoType::SecondForFixed => 5,
         };
     }
 

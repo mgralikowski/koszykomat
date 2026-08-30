@@ -13,7 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * The four mandatory promo-mechanic tests required by CLAUDE.md: each of the four mechanics gets
+ * The five mandatory promo-mechanic tests required by CLAUDE.md: each of the five mechanics gets
  * a test asserting a computed basket total.
  *
  * Fixtures are built here rather than taken from ExampleBasketSeeder so every number in an
@@ -87,6 +87,52 @@ class BasketComparatorTest extends TestCase
 
         $this->assertSame('8.49', $report->withoutCard->resultFor('lidl')->total->toDecimalString());
         $this->assertSame('6.49', $report->withCard->resultFor('lidl')->total->toDecimalString());
+    }
+
+    public function test_it_prices_a_conditional_unit_price(): void
+    {
+        $listing = $this->listing();
+        $leaflet = $this->leafletFor($listing);
+
+        // "cena za 1 opak. 4,00 przy zakupie 3 opak.", shelf price 6,00.
+        PriceEntry::factory()->conditionalUnitPrice('4.00', 3)->create([
+            'leaflet_id' => $leaflet->id,
+            'network_product_id' => $listing->id,
+            'regular_price' => '6.00',
+        ]);
+
+        // Exactly the required quantity: every item in the complete group takes the conditional
+        // price. The formula the other two conditional mechanics share would charge one item at the
+        // shelf price and give 14,00 — the numbers are chosen so that mistake cannot pass.
+        $this->assertBasketTotal('12.00', quantity: 3);
+
+        // Below it the promotion does not exist at all, so the shelf price applies to everything.
+        $this->assertBasketTotal('12.00', quantity: 2);
+
+        // Not a whole multiple: one complete group discounted, the leftover item at the shelf price.
+        $this->assertBasketTotal('18.00', quantity: 4);
+
+        // Two complete groups.
+        $this->assertBasketTotal('24.00', quantity: 6);
+    }
+
+    public function test_a_conditional_unit_price_below_its_required_quantity_is_reported_as_not_applied(): void
+    {
+        $listing = $this->listing();
+        $leaflet = $this->leafletFor($listing);
+
+        PriceEntry::factory()->conditionalUnitPrice('4.00', 3)->create([
+            'leaflet_id' => $leaflet->id,
+            'network_product_id' => $listing->id,
+            'regular_price' => '6.00',
+        ]);
+
+        $notApplied = $this->compare(quantity: 2)->withoutCard->resultFor('lidl')->lineFor('produkt');
+        $applied = $this->compare(quantity: 3)->withoutCard->resultFor('lidl')->lineFor('produkt');
+
+        // The report must say the headline price did not apply rather than showing it as achieved.
+        $this->assertTrue($notApplied->promoRequiredMoreItems);
+        $this->assertFalse($applied->promoRequiredMoreItems);
     }
 
     private function assertBasketTotal(string $expected, int $quantity): void

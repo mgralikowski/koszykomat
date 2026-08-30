@@ -90,4 +90,18 @@ class PriceEntryFactory extends Factory
             'second_item_price' => null,
         ]);
     }
+
+    /**
+     * A per-unit price that only applies from `requiredQuantity` items up — the only mechanic that
+     * carries both a promo price and a required quantity.
+     */
+    public function conditionalUnitPrice(string $promoPrice = '4.00', int $requiredQuantity = 3): static
+    {
+        return $this->state(fn (): array => [
+            'promo_type' => PromoType::ConditionalUnitPrice,
+            'promo_price' => $promoPrice,
+            'required_quantity' => $requiredQuantity,
+            'second_item_price' => null,
+        ]);
+    }
 }
