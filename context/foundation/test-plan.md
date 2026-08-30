@@ -1,0 +1,217 @@
+# Test Plan
+
+> Phased test rollout for this project. Strategy is frozen at the top
+> (§1–§5); cookbook patterns at the bottom (§6) fill in as phases ship.
+> Read before writing any new test.
+>
+> Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
+>
+> Last updated: 2026-08-30
+
+## 1. Strategy
+
+Tests follow three non-negotiable principles for this project:
+
+1. **Cost × signal.** The cheapest test that gives a real signal for the
+   risk wins. Do not promote to e2e because e2e "feels safer." Do not put a
+   vision model on top of a deterministic visual diff that already catches
+   the regression.
+2. **User concerns are first-class evidence.** Risks anchored in "the
+   developer is worried about X, and the failure would surface somewhere in
+   `<area>`" carry the same weight as PRD lines or hot-spot data.
+3. **Risks are scenarios, not code locations.** This plan documents *what
+   could fail* and *why we believe it's likely* — drawn from documents,
+   interview, and codebase *signal* (churn, structure, test base). It does
+   NOT claim to know which line owns the failure. That knowledge is
+   produced by `/10x-research` during each rollout phase. If the plan and
+   research disagree about where the failure lives, research is the
+   ground truth.
+
+Hot-spot scope used for likelihood weighting: `app/`, `resources/views/`,
+`routes/`, `database/`, `tests/` (30 days, 40 commits; excluding `context/`,
+`.claude/`, `vendor/`, `node_modules/`, `public/build/`, lockfiles).
+
+## 2. Risk Map
+
+The top failure scenarios this project must protect against, ordered by
+risk = impact × likelihood. Risks are failure scenarios in user / business
+terms, not test names. The Source column cites the *evidence that surfaced
+this risk* — never a specific file as "where the failure lives" (that is
+research's job, see §1 principle #3).
+
+| # | Risk (failure scenario) | Impact | Likelihood | Source (evidence — not anchor) |
+|---|---|---|---|---|
+| 1 | A promo mechanic is mispriced on a leaflet shape the hand-seed never contained, and the verdict names the wrong chain | High | High | PRD FR-007 + its 2026-08-30 extension (real data already broke the four-mechanic model once); PRD Business Logic; interview Q1, Q3; hot-spot dir `app/Pricing` (17 commits/30d) |
+| 2 | The report omits or misstates the audit trail the verdict rests on — validity window per price, forced-overbuy cost, explicit matched pair — so a correct verdict is unverifiable and a wrong one is undetectable | High | High | PRD FR-008; PRD NFR "Transparentność świeżości danych"; PRD Business Logic; interview Q2, Q4; hot-spot dirs `resources/views/layouts` (4 commits/30d), `resources/views` (4) |
+| 3 | Expired, incomplete or unmatched data still yields a confident verdict instead of "brak danych" | High | Medium | PRD Success Criteria §Guardrails; PRD FR-008, FR-009; roadmap S-04 status `proposed` (seed is about to be swapped for real, sometimes-partial data); hot-spot dir `app/Pricing` (17 commits/30d) |
+| 4 | Extraction persists a plausible-but-wrong row — a pack price read as a unit price, the wrong mechanic type, a misread threshold N — which the validation gate accepts as fact | High | Medium | roadmap F-03 §Risk ("confident-but-wrong numbers … the failure the PRD guardrail exists to catch"); PRD FR-006; interview Q3; hot-spot dirs `app/Ingestion` (7 commits/30d), `app/Ingestion/Drivers` (6) |
+| 5 | A saved basket is reachable by someone who does not own it (abuse lens — authorization/IDOR) | High | Medium | PRD NFR "Prywatność koszyków"; PRD §Access Control; roadmap S-03 §Risk ("authorization scoping is the thing to get right"); hot-spot dirs `app/Http/Controllers` (9 commits/30d), `routes` (6) |
+| 6 | Test fixtures encode a shape production cannot hold, so a green suite proves nothing about production behaviour | Medium | High | `context/foundation/lessons.md` — "Never let related factories each create their own parent" (already happened once; caught by review, not by a test); interview Q2; hot-spot dir `database/factories` (7 commits/30d) |
+| 7 | The basket accepts a quantity the domain cannot price honestly (zero, negative, absurd) and computes a verdict from it anyway (abuse lens — untrusted input / server-side validation parity) | Medium | Medium | PRD FR-003 (quantity optional in the UI, default 1); PRD Business Logic (conditional promos priced off the actual quantity); hot-spot dir `app/Http/Controllers` (9 commits/30d) |
+
+### Risk Response Guidance
+
+| Risk | What would prove protection | Must challenge | Context `/10x-research` must ground | Likely cheapest layer | Anti-pattern to avoid |
+|---|---|---|---|---|---|
+| #1 | For a basket and a known real-leaflet offer shape, the computed total equals what a shopper actually pays at the till, forced overbuy included | That the five mechanics are protected because five tests exist; that a total asserted against SQLite decimal handling also holds on MySQL 8.0 | Where quantity enters pricing; how each mechanic's parameters are persisted; which offer shapes real leaflets produced after F-03 | integration (real DB, fixture-driven) | Expected total derived by the same arithmetic as the code under test — the oracle failure; one happy-path total per mechanic and nothing else |
+| #2 | A rendered report states, per price, its from–to validity window; names the forced extra units as a cost; and shows each matched pair's brand/weight difference | That data present on the model means the user sees it; that asserting Polish copy is the same as asserting behaviour | Which template renders the report and what the controller hands it; where validity windows, overbuy cost and pair metadata originate | integration (HTTP feature test asserting rendered content) | Full-page snapshots (excluded — see §7); asserting markup structure instead of the required fact |
+| #3 | With expired, missing or unpaired data the response withholds a winner and says "brak danych" — and abstention is decided for the basket, not swallowed line by line | That a non-empty result means the data was complete; that "now" in a test coincides with a leaflet's live window | Expiry semantics on price rows; what "unmatched" means at comparison time; how an abstaining line propagates to the basket verdict | integration + time travel (`travelTo`) | Happy-path only; asserting that the abstention branch exists without asserting that a verdict is actually withheld |
+| #4 | A parser output that is wrong but well-formed is rejected or flagged for review rather than persisted as a priceable fact | That the gate passing means the number is right; that model confidence is evidence of correctness | The gate's accept/reject/flag contract; provenance columns on price rows; which recorded real leaflet fragments can serve as fixtures | hermetic (stubbed acquirer / vision client) + recorded fixtures | Live calls to chain sites or a vision API inside the suite; mocking the gate itself instead of feeding it bad input |
+| #5 | Every route that reads, re-compares, renames or deletes a saved basket refuses a non-owner outright — and never discloses another account's basket contents | That one privacy test on one route covers the whole resource; that being authenticated implies owning the record | The full inventory of routes touching a saved basket; what the existing privacy coverage actually asserts today | integration (HTTP) | Testing only the list/index route; asserting a redirect happened without asserting nothing was disclosed |
+| #6 | A default factory row is a shape production can hold — chain, leaflet and price agree — and a test fails if it is not | That a passing suite implies valid fixtures | How parents are derived across the price/promo factories; which invariants no composite key can express | integration (real DB constraints) | Re-deriving each factory's own logic inside its assertion |
+| #7 | Out-of-domain quantities are rejected at the request boundary with a Polish validation message, and no verdict is computed from them | That the UI default of 1 protects the server | Where quantity is validated versus where it is consumed; whether the session basket and the persisted basket share that boundary | integration (HTTP) | Testing the form widget rather than the request boundary |
+
+## 3. Phased Rollout
+
+Each row is a discrete rollout phase that will open its own change folder
+via `/10x-new`. Status moves left-to-right through the values below; the
+orchestrator updates Status as artifacts appear on disk.
+
+| # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
+|---|---|---|---|---|---|---|
+| 1 | Verdict correctness on real shapes | Prove the till-total for every promo mechanic on the offer shapes real leaflets actually produce, on fixtures that cannot encode an impossible row | #1, #6 | integration | change opened | `context/changes/testing-verdict-correctness/` |
+| 2 | Report as the user reads it | Prove the report states the facts that make the verdict auditable: validity window per price, forced-overbuy cost, explicit matched pair | #2 | integration (HTTP content) | not started | — |
+| 3 | Honest abstention | Prove "brak danych" wins over a guess when data is expired, incomplete or unpaired | #3 | integration + time travel | not started | — |
+| 4 | Account boundary and input contract | Prove owner-only access on every saved-basket route, and that the server rejects quantities the domain cannot price | #5, #7 | integration (HTTP) | not started | — |
+| 5 | Ingestion trust boundary | Prove a wrong-but-well-formed extraction never becomes a priceable fact | #4 | hermetic + recorded fixtures | not started | — |
+
+Ordering note: phases 1 and 2 are ordered by *gap* × impact, not impact
+alone. Pricing already carries ~30 test methods and ingestion ~24, while the
+rendered report carries none — so the cheapest large signal available is the
+report, even though ingestion feeds the same verdict. Phase 3 must land
+before roadmap S-04 swaps the hand-seed for real, sometimes-partial data.
+Phase 5 has the highest setup cost and the best relative coverage today; it
+is the natural place to stop or defer if the rollout runs long.
+
+## 4. Stack
+
+The classic test base for this project. AI-native tools (if any) carry a
+`checked:` date so future readers can see which lines need re-verification.
+
+| Layer | Tool | Version | Notes |
+|---|---|---|---|
+| unit + integration | PHPUnit | ^12.5.12 | `composer test` clears config then runs `artisan test`; suites `Unit` and `Feature` |
+| test database | SQLite `:memory:` | n/a | Set in `phpunit.xml`; production is MySQL 8.0 — see the divergence note below |
+| fixtures | Eloquent factories + `fakerphp/faker` | ^1.23 | Already burned once (`lessons.md`); Phase 1 makes fixture integrity assertable |
+| HTTP / view assertions | Laravel feature tests | ^13.8 | Content assertions on the rendered report; no snapshot layer — see §7 |
+| test doubles | Mockery | ^1.6 | For the hermetic ingestion layer in Phase 5 |
+| external HTTP faking | `Http::fake` (framework) | ^13.8 | No leaflet site or vision API is ever called from the suite |
+| time control | `travelTo` / time freezing (framework) | ^13.8 | Required by Phase 3 for leaflet validity windows; checked: 2026-08-30 |
+| queue / console assertions | `Queue::fake`, `$this->artisan(...)` | ^13.8 | Available for the ingestion command; checked: 2026-08-30 |
+| style | Pint (Laravel preset) | ^1.27 | `composer lint` / `composer fix`; already gated in CI |
+| e2e / browser | none | — | Deliberate: no e2e layer is proposed by this rollout; feature tests cover the flows |
+| accessibility | none yet | — | Not covered by any phase in §3; out of scope for this rollout |
+| AI-native | none | — | No phase justified one under cost × signal |
+
+**MySQL/SQLite divergence.** The whole suite runs on SQLite `:memory:` while
+production runs MySQL 8.0 (`CLAUDE.md` hard constraints). Monetary and
+decimal assertions can therefore pass locally and differ in production. This
+is carried as a "must challenge" line on Risk #1 rather than as its own risk
+row: a second MySQL test lane costs more than it returns at MVP scale.
+Re-evaluate if a rounding defect ever reaches production.
+
+**Stack grounding tools (current session):**
+- Docs: Context7 (`/websites/laravel_13_x`) — verified that `Queue::fake`, console-command assertions and time-travel helpers are current in Laravel 13.x; checked: 2026-08-30
+- Search: none — no Exa.ai or web-search MCP available in current session; stack facts came from `composer.json`, `phpunit.xml` and Context7
+- Runtime/browser: claude-in-chrome MCP available — not used; no phase in §3 needs a browser layer
+- Provider/platform: none — no GitHub MCP in current session; CI facts read directly from `.github/workflows/deploy.yml`
+
+## 5. Quality Gates
+
+The full set of gates that must pass before a change reaches production.
+"Required for §3 Phase `<N>`" means the gate is enforced once that rollout
+phase lands; before that, the gate is planned.
+
+| Gate | Where | Required? | Catches |
+|---|---|---|---|
+| Pint style check (`composer lint`) | local + CI (pre-deploy) | required — already wired | style drift |
+| PHPUnit suite (`composer test`) | local only | required before push — deliberately not in CI (`98f6a3a`) | logic regressions |
+| Promo-mechanic total assertions | in the PHPUnit suite | required — mandated by `CLAUDE.md`; hardened by §3 Phase 1 | a mispriced mechanic flipping the verdict |
+| Fixture-integrity assertions | in the PHPUnit suite | required after §3 Phase 1 | factories producing rows production cannot hold |
+| Report-content assertions | in the PHPUnit suite | required after §3 Phase 2 | the verdict losing its audit trail |
+| Abstention assertions | in the PHPUnit suite | required after §3 Phase 3 | a confident verdict over stale or partial data |
+| Ownership assertions on saved baskets | in the PHPUnit suite | required after §3 Phase 4 | cross-account basket disclosure |
+| Hermetic ingestion-gate assertions | in the PHPUnit suite | required after §3 Phase 5 | wrong-but-well-formed rows becoming priceable facts |
+| Mutation check (Infection, narrow scope) | local, ad hoc | optional — after §3 Phase 1 or 3 only | assertions that execute code without proving anything |
+
+CI (`.github/workflows/deploy.yml`) gates deployment on Pint only; the test
+step was removed in `98f6a3a` so the suite runs locally. Consequence for this
+rollout: every "in the PHPUnit suite" row above is enforced by developer
+discipline, not by the pipeline — a push that skipped `composer test` reaches
+production with the phase's protection unverified. No rollout phase in §3
+addresses this, because it is a workflow decision rather than a test gap. If
+the local-only rule ever slips, the fix is to restore the CI test step, not
+to add a phase.
+
+## 6. Cookbook Patterns
+
+How to add new tests in this project. Each sub-section is filled in once
+the relevant rollout phase ships; before that, the sub-section reads
+"TBD — see §3 Phase `<N>`."
+
+### 6.1 Adding a promo-mechanic pricing test
+
+- TBD — see §3 Phase 1, for the till-total pattern (Risk #1: a mechanic
+  mispriced on a real-leaflet shape flips the verdict).
+
+### 6.2 Adding or changing a factory
+
+- TBD — see §3 Phase 1, for the fixture-integrity pattern (Risk #6: a
+  default row must be a shape production can hold).
+
+### 6.3 Adding a test for a rendered report or view
+
+- TBD — see §3 Phase 2, for the content-assertion pattern (Risk #2:
+  validity window, forced-overbuy cost and matched-pair disclosure). Note
+  the boundary with §7 — assert facts, never snapshots.
+
+### 6.4 Adding a test for data freshness or abstention
+
+- TBD — see §3 Phase 3, for the time-travel + partial-data pattern
+  (Risk #3: "brak danych" must beat a guess).
+
+### 6.5 Adding a test for a new route or controller
+
+- TBD — see §3 Phase 4, for the ownership and input-boundary pattern
+  (Risks #5, #7).
+
+### 6.6 Adding a test for an ingestion parser or the validation gate
+
+- TBD — see §3 Phase 5, for the hermetic stub + recorded fixture pattern
+  (Risk #4: never call a chain site or a vision API from the suite).
+
+### 6.7 Per-rollout-phase notes
+
+(Filled in by `/10x-implement` after each phase lands — two or three lines
+capturing anything surprising the phase taught.)
+
+## 7. What We Deliberately Don't Test
+
+Exclusions agreed during the rollout (Phase 2 interview, Q5). Future
+contributors should respect these unless the underlying assumption changes.
+
+- **Snapshot and pixel-diff tests of views** — they break on every Tailwind
+  or copy tweak and catch nothing about correctness. Asserting that the
+  report *states a required fact* (§3 Phase 2) is a different thing and is
+  in scope. Re-evaluate only if a rendering regression ever reaches
+  production undetected. (Source: Phase 2 interview Q5.)
+- **A second MySQL test lane** — the suite stays on SQLite `:memory:`;
+  divergence is carried as a challenge on Risk #1 instead. Re-evaluate if a
+  decimal or collation defect reaches production. (Source: §4 divergence
+  note.)
+- **A nightly-refresh scheduler test** — no schedule is wired yet (roadmap
+  S-04 is `proposed`); testing it now would mean inventing the code under
+  test. Re-evaluate when S-04 lands. (Source: Phase 3 challenger pass.)
+
+## 8. Freshness Ledger
+
+- Strategy (§1–§5) last reviewed: 2026-08-30
+- Stack versions last verified: 2026-08-30
+- AI-native tool references last verified: 2026-08-30
+
+Refresh (`/10x-test-plan --refresh`) when:
+
+- a new top-3 risk surfaces from the roadmap or archive,
+- a recommended tool's `checked:` date is older than three months,
+- the project's tech stack changes (new framework, new test runner),
+- §7 negative-space no longer matches what the team believes.
