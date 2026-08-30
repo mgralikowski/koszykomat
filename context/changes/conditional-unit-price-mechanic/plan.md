@@ -238,9 +238,9 @@ The six existing `second_for_fixed` rows from F-03's mapping are left alone: all
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `ddev composer test`
-- [x] 2.2 Code style passes: `ddev composer lint`
-- [x] 2.3 No parser path still emits `SecondForFixed` for a "przy zakupie" tile
+- [x] 2.1 Full test suite passes: `ddev composer test` — 88eef4d
+- [x] 2.2 Code style passes: `ddev composer lint` — 88eef4d
+- [x] 2.3 No parser path still emits `SecondForFixed` for a "przy zakupie" tile — 88eef4d
 
 #### Manual
 

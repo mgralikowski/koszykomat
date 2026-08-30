@@ -393,36 +393,36 @@ Production has never been migrated with real data beyond the seed, and the F-02 
 
 #### Automated
 
-- [x] 2.1 Platform requirements satisfied with the new packages: `ddev composer check-platform-reqs`
-- [x] 2.2 Full test suite passes: `ddev composer test`
-- [x] 2.3 Lidl parser fixture test passes: `ddev artisan test tests/Feature/Ingestion/PdfTextParserTest.php`
-- [x] 2.4 Code style passes: `ddev composer lint`
-- [x] 2.5 Command registered: `ddev artisan list | grep leaflets:ingest`
-- [x] 2.6 Dry run completes without writing and leaves row counts unchanged
+- [x] 2.1 Platform requirements satisfied with the new packages: `ddev composer check-platform-reqs` — 88eef4d
+- [x] 2.2 Full test suite passes: `ddev composer test` — 88eef4d
+- [x] 2.3 Lidl parser fixture test passes: `ddev artisan test tests/Feature/Ingestion/PdfTextParserTest.php` — 88eef4d
+- [x] 2.4 Code style passes: `ddev composer lint` — 88eef4d
+- [x] 2.5 Command registered: `ddev artisan list | grep leaflets:ingest` — 88eef4d
+- [x] 2.6 Dry run completes without writing and leaves row counts unchanged — 88eef4d
 
 #### Manual
 
-- [x] 2.7 A real Lidl ingest writes a leaflet and priced rows with `source` and `confidence = 1.00`
-- [x] 2.8 A real Biedronka ingest writes rows carrying `box_2d` and a model-derived confidence
-- [x] 2.9 Five ingested Lidl prices spot-checked against the leaflet PDF — they match exactly
-- [x] 2.10 The homepage renders the example basket from ingested prices with correct validity windows
-- [x] 2.11 Re-running the command changes no row counts (idempotent upsert)
-- [x] 2.12 Assets appear under `storage/app/leaflets/` and a leaflet older than two months is pruned
-- [x] 2.13 An unmatched offer is skipped silently, not written as an orphan
+- [x] 2.7 A real Lidl ingest writes a leaflet and priced rows with `source` and `confidence = 1.00` — 88eef4d
+- [x] 2.8 A real Biedronka ingest writes rows carrying `box_2d` and a model-derived confidence — 88eef4d
+- [x] 2.9 Five ingested Lidl prices spot-checked against the leaflet PDF — they match exactly — 88eef4d
+- [x] 2.10 The homepage renders the example basket from ingested prices with correct validity windows — 88eef4d
+- [x] 2.11 Re-running the command changes no row counts (idempotent upsert) — 88eef4d
+- [x] 2.12 Assets appear under `storage/app/leaflets/` and a leaflet older than two months is pruned — 88eef4d
+- [x] 2.13 An unmatched offer is skipped silently, not written as an orphan — 88eef4d
 
 ### Phase 3: Gold set and the accuracy decision
 
 #### Automated
 
-- [x] 3.1 Full test suite passes: `ddev composer test`
-- [x] 3.2 Offer-mapping regression test passes: `ddev artisan test tests/Feature/Ingestion/VisionOfferMappingTest.php`
-- [x] 3.3 Code style passes: `ddev composer lint`
-- [x] 3.4 Measurement command runs and reports all three scores: `ddev artisan leaflets:measure-vision`
+- [x] 3.1 Full test suite passes: `ddev composer test` — 88eef4d
+- [x] 3.2 Offer-mapping regression test passes: `ddev artisan test tests/Feature/Ingestion/VisionOfferMappingTest.php` — 88eef4d
+- [x] 3.3 Code style passes: `ddev composer lint` — 88eef4d
+- [x] 3.4 Measurement command runs and reports all three scores: `ddev artisan leaflets:measure-vision` — 88eef4d
 
 #### Manual
 
-- [x] 3.5 The gold set covers all four mechanics and every offer on its five pages is hand-verified
-- [x] 3.6 The three scores are recorded in `measurement.md` with the model and date
-- [x] 3.7 The branch that fired matches the rule as written, not adjusted after seeing the numbers
+- [x] 3.5 The gold set covers all four mechanics and every offer on its five pages is hand-verified — 88eef4d
+- [x] 3.6 The three scores are recorded in `measurement.md` with the model and date — 88eef4d
+- [x] 3.7 The branch that fired matches the rule as written, not adjusted after seeing the numbers — 88eef4d
 - [ ] 3.8 If Biedronka ships: five ingested Biedronka prices spot-checked against the page images
 - [ ] 3.9 If Biedronka does not ship: ingest writes Lidl rows only and the homepage shows "brak danych" for Biedronka without naming a winner
