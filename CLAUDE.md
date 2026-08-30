@@ -38,7 +38,7 @@ App URL: https://koszykomat.ddev.site
 
 ## Conventions
 
-- Testing: optional during MVP — except the four promo mechanics (simple promo price, 1+1 gratis, second for 1 PLN/grosz, loyalty-card price): each must have a PHPUnit test asserting the computed basket total. Tests use in-memory SQLite.
+- Testing: optional during MVP — except the five promo mechanics (simple promo price, 1+1 gratis, second for 1 PLN/grosz, loyalty-card price, conditional unit price when buying N): each must have a PHPUnit test asserting the computed basket total. Tests use in-memory SQLite. The fifth was added on 2026-08-30 after the first real Lidl ingestion showed it is that chain's dominant mechanic — see PRD FR-007.
 - Git: solo project, small commits straight to `main`, conventional-commit style messages.
 - Auth per PRD is OAuth-only (no email+password) — Laravel Socialite is planned but not yet installed.
 

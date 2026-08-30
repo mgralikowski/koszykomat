@@ -3,7 +3,7 @@ project: Koszykomat
 version: 1
 status: draft
 created: 2026-07-21
-updated: 2026-08-29
+updated: 2026-08-30
 prd_version: 1
 main_goal: market-feedback
 top_blocker: none
@@ -22,7 +22,7 @@ milestone_status: open
 
 **M-01: MVP — promo-aware basket verdict** — Status: open
 
-- **Intent:** prove and ship the product wedge end-to-end — a basket verdict that understands the four promo mechanics, prices the forced overbuy, and either names an honest winner or says "no data" — first on a hand-seeded dataset, then on real nightly-refreshed leaflet data.
+- **Intent:** prove and ship the product wedge end-to-end — a basket verdict that understands the five promo mechanics, prices the forced overbuy, and either names an honest winner or says "no data" — first on a hand-seeded dataset, then on real nightly-refreshed leaflet data.
 - **Source materials:** `context/foundation/prd.md` (v1) + `tech-stack.md` / `infrastructure.md` / `deploy-plan.md` + auto-researched codebase baseline.
 - **Done when:** every F-NN and S-NN below is `done`.
 - **Scope anchors:** FR-001 – FR-009, US-01; NFR mobile-first, NFR <2 s responsiveness, NFR data-freshness transparency, NFR basket privacy; Business Logic; Access Control.
@@ -35,7 +35,7 @@ milestone_status: open
 
 Shoppers at Polish discount chains cannot tell whether their basket is actually cheaper at Lidl or Biedronka — real prices are trapped in weekly leaflets (images/PDFs) in a form that cannot be compared 1:1, and the two chains' advertising contradicts each other. Koszykomat structures leaflet prices into a comparable form and computes a promo-aware "where is it cheaper" verdict for the whole basket, honestly pricing conditional mechanics (1+1, second-for-1-PLN) including their hidden cost — a forced multi-item purchase.
 
-The product wedge — the one trait that, if removed, makes this indistinguishable from a generic leaflet-aggregator — is the **promo-aware basket verdict**: it doesn't just show prices, it understands the four promo mechanics and prices the forced overbuy, then names an honest winner (or says "no data"). Everything else on this roadmap exists to make that verdict real, trustworthy, and reachable.
+The product wedge — the one trait that, if removed, makes this indistinguishable from a generic leaflet-aggregator — is the **promo-aware basket verdict**: it doesn't just show prices, it understands the five promo mechanics and prices the forced overbuy, then names an honest winner (or says "no data"). Everything else on this roadmap exists to make that verdict real, trustworthy, and reachable.
 
 ## North star
 
@@ -49,7 +49,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | ---- | -------------------------------- | ----------------------------------------------------------------- | ------------- | --------------------------------- | -------- |
 | F-01 | price-promo-data-model-seed      | (foundation) price/promo data model + hand-seeded example basket  | —             | FR-006, FR-007, FR-008, FR-009    | done |
 | F-02 | oauth-authentication             | (foundation) OAuth login + open registration wired                | —             | FR-002, Access Control            | done |
-| F-03 | leaflet-vision-ingestion         | (foundation) per-chain leaflet→structured-data ingestion + CLI trigger | F-01      | FR-006, FR-009                    | proposed |
+| F-03 | leaflet-vision-ingestion         | (foundation) per-chain leaflet→structured-data ingestion + CLI trigger | F-01      | FR-006, FR-009                    | in-progress |
 | S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | done |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | done |
 | S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | proposed |
@@ -119,7 +119,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - How accurately does a vision model read Biedronka's page images — enough to price a verdict, or only enough with a `needs_review` gate? — Owner: user. Block: no. (Measured in F-03's own phase 1 against a hand-labelled gold set; the research pre-commits the decision rule and a Lidl-only fallback, so an answer either way still ships.)
 - **Risk:** scope grew to two parsers, but risk dropped sharply: Lidl's PDF text layer is exact by construction, so half the corpus carries no extraction risk at all. The remaining risk is confident-but-wrong numbers from Biedronka's images — the failure the PRD guardrail exists to catch — which the plan must answer with deterministic post-extraction validation and provenance columns on `price_entries`, not with model confidence.
-- **Status:** proposed
+- **Status:** in-progress
 
 ## Slices
 

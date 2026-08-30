@@ -1,8 +1,9 @@
 ---
 project: "Koszykomat"
-version: 1
+version: 2
 status: draft
 created: 2026-06-05
+updated: 2026-08-30
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -30,7 +31,7 @@ Persona pierwotna: szeroka publika w Polsce — osoby świadomie zarządzające 
 ## Success Criteria
 
 ### Primary
-- Zalogowany użytkownik tworzy koszyk z 3 produktów (ilość opcjonalna) i otrzymuje poprawne porównanie cen Lidl vs Biedronka z werdyktem „gdzie taniej", z naliczonymi mechanikami promocji (prosta cena promocyjna, 1+1 gratis, drugi produkt za złotówkę/grosz, ceny z kartą lojalnościową), na danych odświeżanych automatycznie co noc.
+- Zalogowany użytkownik tworzy koszyk z 3 produktów (ilość opcjonalna) i otrzymuje poprawne porównanie cen Lidl vs Biedronka z werdyktem „gdzie taniej", z naliczonymi mechanikami promocji (prosta cena promocyjna, 1+1 gratis, drugi produkt za złotówkę/grosz, ceny z kartą lojalnościową, cena jednostkowa warunkowana ilością), na danych odświeżanych automatycznie co noc.
 
 ### Secondary
 - Użytkownicy zapisują koszyki i wracają porównać je ponownie po odświeżeniu danych (retencja zapisanych koszyków).
@@ -48,7 +49,7 @@ Persona pierwotna: szeroka publika w Polsce — osoby świadomie zarządzające 
 
 #### Acceptance Criteria
 - Werdykt wskazuje tańszą sieć dla całego koszyka albo komunikuje „brak danych" (nigdy błędny werdykt — guardrail)
-- Ceny warunkowe (1+1, drugi za zł/gr) są naliczane zgodnie z wymaganą ilością sztuk, a wymuszony ponadnormatywny zakup jest widoczny w raporcie
+- Ceny warunkowe (1+1, drugi za zł/gr, cena jednostkowa przy zakupie N sztuk) są naliczane zgodnie z wymaganą ilością sztuk, a wymuszony ponadnormatywny zakup jest widoczny w raporcie
 - Produkty dopasowane między sieciami mają zaznaczoną różnicę marki
 
 ## Functional Requirements
@@ -72,8 +73,9 @@ Persona pierwotna: szeroka publika w Polsce — osoby świadomie zarządzające 
 ### Ingestia i analiza danych (system)
 - FR-006: System może przetworzyć gazetkę w formie graficznej (jeden format źródła na sieć) w ustrukturyzowaną bazę cen i promocji. Priority: must-have
   > Socrates: Rozważono „OCR/vision myli ceny" i „gazetka to złe źródło". Bez kontrargumentu — stoi jak napisany.
-- FR-007: System może rozpoznać i poprawnie naliczyć cztery mechaniki promocji: prostą cenę promocyjną, 1+1 gratis, drugi produkt za złotówkę/grosz, cenę z kartą lojalnościową. Priority: must-have
+- FR-007: System może rozpoznać i poprawnie naliczyć pięć mechanik promocji: prostą cenę promocyjną, 1+1 gratis, drugi produkt za złotówkę/grosz, cenę z kartą lojalnościową oraz cenę jednostkową warunkowaną ilością („cena za 1 opak. przy zakupie N opak."). Priority: must-have
   > Socrates: Rozważono „karta lojalnościowa rozdwaja werdykt" i „4 mechaniki = dużo krawędzi". Bez kontrargumentu — stoi jak napisany.
+  > Rozszerzenie 2026-08-30 (dowód z danych, nie z dyskusji): pierwsza ingestia prawdziwej gazetki Lidla pokazała, że **cena jednostkowa warunkowana ilością jest tam mechaniką dominującą** — fraza „przy zakupie N" występuje 94 razy w jednej gazetce, częściej niż „gratis" (25) i „za grosz" (8) razem wzięte. Czterema pierwotnymi mechanikami nie da się jej zapisać: nie jest ani prostą obniżką (cena zależy od ilości), ani ceną za kolejną sztukę (wszystkie sztuki kosztują tyle samo). Bez piątej mechaniki system musiałby zwracać „brak danych" dla większości realnych ofert Lidla — czyli guardrail działałby poprawnie, a produkt nie pokazywałby nic.
 - FR-008: System może dopasować odpowiadające sobie produkty między sieciami; raport zawsze jawnie pokazuje, co z czym sparowano (marka, gramatura). Priority: must-have
   > Socrates: Kontrargument uznany: „automat może dopasować nieporównywalne (gramatura, marka własna vs brandowa) — fałszywe porównania".
   > Rozstrzygnięcie: pary jawne w raporcie — użytkownik widzi podstawę werdyktu i sam ocenia porównywalność.
@@ -95,6 +97,8 @@ Persona pierwotna: szeroka publika w Polsce — osoby świadomie zarządzające 
 System rozstrzyga, w której sieci dany koszyk zakupowy jest realnie tańszy, naliczając rzeczywisty koszt mechanik promocyjnych (w tym wymuszonych zakupów wielosztukowych) i jawnie dopasowując odpowiedniki produktów między sieciami.
 
 Reguła konsumuje: koszyk użytkownika (produkty + ilości, domyślnie 1) oraz aktualne, ustrukturyzowane dane o cenach i promocjach obu sieci (z datą wygaśnięcia gazetki). Promocje warunkowe są naliczane od faktycznej ilości sztuk, a wymuszony ponadnormatywny zakup jest traktowany jako koszt i widoczny w wyniku — cena „po promocji" nie jest brana naiwnie.
+
+Cena jednostkowa warunkowana ilością rządzi się tym samym prawem, tylko ostrzej: obniżona cena obowiązuje **wyłącznie** przy zakupie co najmniej N sztuk, więc przy mniejszej ilości reguła liczy cenę regularną, a przy ilości nie będącej wielokrotnością N — cenę obniżoną za pełne wielokrotności i regularną za resztę. Kupujący jednego jogurtu nie dostaje ceny za sześć, a raport pokazuje, ile sztuk trzeba było dołożyć, żeby promocja w ogóle zadziałała.
 
 Wyjściem jest werdykt „gdzie taniej" dla całego koszyka wraz z raportem porównania: jawne pary dopasowanych produktów (marka, gramatura) i naliczone promocje. Gdy dane są niepełne lub wygasłe, reguła zwraca „brak danych" zamiast werdyktu.
 
