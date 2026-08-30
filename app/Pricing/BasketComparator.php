@@ -13,8 +13,9 @@ use Illuminate\Support\Carbon;
 /**
  * Compares a basket across every chain and returns an honest verdict.
  *
- * Freshness is enforced at load time: entries are fetched through PriceEntry::validOn(), so an
- * expired price has no code path into a total. That makes the "never a stale verdict" guarantee
+ * Freshness and trust are both enforced at load time: entries are fetched through
+ * PriceEntry::usableOn(), so neither an expired price nor one the ingestion validation gate flagged
+ * has a code path into a total. That makes the "never a stale or unverified verdict" guarantee
  * structural rather than something every caller has to remember.
  *
  * Chains are read from the database rather than hardcoded, keeping the engine chain-agnostic as
@@ -61,7 +62,7 @@ final class BasketComparator
             ->whereIn('slug', $slugs)
             ->with([
                 'networkProducts.network',
-                'networkProducts.priceEntries' => fn ($query) => $query->validOn($on)->with('leaflet'),
+                'networkProducts.priceEntries' => fn ($query) => $query->usableOn($on)->with('leaflet'),
             ])
             ->get()
             ->keyBy('slug');

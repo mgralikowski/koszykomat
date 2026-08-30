@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Pricing\Money;
+
 /**
  * The four leaflet promo mechanics required by the PRD (FR-007), plus the no-promo baseline.
  *
@@ -81,5 +83,61 @@ enum PromoType: string
     public static function parameterColumns(): array
     {
         return ['promo_price', 'required_quantity', 'second_item_price'];
+    }
+
+    /**
+     * Whether the parameter *values* are admissible for this mechanic, given the regular price.
+     *
+     * requiredParameters()/forbiddenParameters() only say which columns must hold a value. That was
+     * enough while every row was hand-written in the seeder, but a parser can produce a structurally
+     * valid row carrying nonsense — a `one_plus_one` with `required_quantity = 1` buys nothing, and
+     * a promo price above the regular price is not a promotion. Those rows are impossible rather
+     * than merely unlikely, so they are rejected here without a database round-trip.
+     *
+     * Returns the reasons the row is inadmissible; an empty list means the values are consistent.
+     * Money comparisons go through App\Pricing\Money — never raw operators on `decimal:2` strings.
+     *
+     * @return list<string>
+     */
+    public function valueViolations(
+        Money $regularPrice,
+        ?Money $promoPrice,
+        ?int $requiredQuantity,
+        ?Money $secondItemPrice,
+    ): array {
+        $violations = [];
+
+        if ($this === self::Simple || $this === self::LoyaltyCard) {
+            if ($promoPrice !== null && ! $promoPrice->isLessThan($regularPrice)) {
+                $violations[] = 'promo_price is not below regular_price';
+            }
+        }
+
+        if ($this->isConditional()) {
+            if ($requiredQuantity !== null && $requiredQuantity < 2) {
+                $violations[] = 'required_quantity must be at least 2 for a conditional mechanic';
+            }
+
+            if ($secondItemPrice !== null && $secondItemPrice->isLessThan(Money::zero())) {
+                $violations[] = 'second_item_price is negative';
+            }
+        }
+
+        if ($this === self::OnePlusOne
+            && $secondItemPrice !== null
+            && ! $secondItemPrice->equals(Money::zero())
+        ) {
+            $violations[] = 'one_plus_one requires a second_item_price of 0.00 — the second item is free';
+        }
+
+        if ($this === self::SecondForFixed && $secondItemPrice !== null) {
+            if ($secondItemPrice->equals(Money::zero())) {
+                $violations[] = 'second_for_fixed requires a second_item_price above 0.00';
+            } elseif (! $secondItemPrice->isLessThan($regularPrice)) {
+                $violations[] = 'second_item_price is not below regular_price';
+            }
+        }
+
+        return $violations;
     }
 }

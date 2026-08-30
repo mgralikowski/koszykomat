@@ -33,6 +33,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'promo_price',
     'required_quantity',
     'second_item_price',
+    'source',
+    'confidence',
+    'needs_review',
+    'source_box',
 ])]
 class PriceEntry extends Model
 {
@@ -50,6 +54,9 @@ class PriceEntry extends Model
             'promo_price' => 'decimal:2',
             'second_item_price' => 'decimal:2',
             'required_quantity' => 'integer',
+            'confidence' => 'decimal:2',
+            'needs_review' => 'boolean',
+            'source_box' => 'array',
         ];
     }
 
@@ -79,5 +86,20 @@ class PriceEntry extends Model
     protected function validOn(Builder $query, DateTimeInterface|string|null $date = null): void
     {
         $query->whereHas('leaflet', fn (Builder $leaflet) => $leaflet->validOn($date));
+    }
+
+    /**
+     * Entries a verdict may be computed from: fresh AND trusted.
+     *
+     * This is the scope the comparison reads through, and it is deliberately indivisible. Freshness
+     * alone is not enough once ingestion writes rows a model produced — a price that failed the
+     * validation gate is exactly as unusable as an expired one, and a caller that took validOn()
+     * and forgot the trust filter would reintroduce the wrong-verdict failure the PRD guardrail
+     * exists to prevent. Composing both here means there is nothing to remember.
+     */
+    #[Scope]
+    protected function usableOn(Builder $query, DateTimeInterface|string|null $date = null): void
+    {
+        $query->validOn($date)->where('needs_review', false);
     }
 }
