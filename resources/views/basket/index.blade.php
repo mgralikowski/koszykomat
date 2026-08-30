@@ -124,6 +124,29 @@
                     Porównaj
                 </button>
             </form>
+
+            {{-- Only reachable with something in the basket: saving an empty one is refused in
+                 the controller too, but there is no reason to offer it here. --}}
+            <form method="POST" action="{{ route('saved.store') }}"
+                  class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+                @csrf
+
+                <div class="min-w-0 flex-1">
+                    <label for="saved-name" class="mb-1 block text-sm text-slate-600">
+                        Zapisz ten koszyk pod nazwą
+                    </label>
+                    <input type="text" name="name" id="saved-name" required
+                           value="{{ old('name') }}"
+                           maxlength="{{ config('koszykomat.saved_baskets.max_name_length') }}"
+                           placeholder="np. Zakupy na tydzień"
+                           class="w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-900">
+                </div>
+
+                <button type="submit"
+                        class="shrink-0 rounded-lg px-4 py-2 font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+                    Zapisz
+                </button>
+            </form>
         @endif
     </section>
 

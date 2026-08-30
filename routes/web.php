@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SavedBasketController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class);
@@ -28,6 +29,17 @@ Route::middleware('auth')->prefix('koszyk')->name('basket.')->group(function () 
     Route::delete('/pozycje/{product}', [BasketController::class, 'destroy'])->name('destroy');
     Route::delete('/', [BasketController::class, 'clear'])->name('clear');
     Route::post('/porownaj', [BasketController::class, 'compare'])->name('compare');
+});
+
+// Baskets kept on the account (FR-005). {savedBasket} is an id, deliberately NOT an implicit
+// route-model binding: implicit binding resolves globally and would load another account's basket
+// before any ownership scoping ran. The controller resolves through the user relation instead.
+Route::middleware('auth')->prefix('koszyki')->name('saved.')->group(function () {
+    Route::get('/', [SavedBasketController::class, 'index'])->name('index');
+    Route::post('/', [SavedBasketController::class, 'store'])->name('store');
+    Route::delete('/{savedBasket}', [SavedBasketController::class, 'destroy'])
+        ->whereNumber('savedBasket')
+        ->name('destroy');
 });
 
 // Deploy verification: returns the git SHA stamped into the release by CI.

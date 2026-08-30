@@ -20,7 +20,12 @@
 
             @auth
                 <div class="flex min-w-0 items-center gap-3">
-                    <span class="truncate text-sm text-slate-600">{{ auth()->user()->name }}</span>
+                    <nav class="flex shrink-0 items-center gap-3 text-sm">
+                        <a href="{{ route('basket.index') }}" class="text-slate-700 hover:text-slate-900">Koszyk</a>
+                        <a href="{{ route('saved.index') }}" class="text-slate-700 hover:text-slate-900">Zapisane</a>
+                    </nav>
+
+                    <span class="hidden truncate text-sm text-slate-600 sm:block">{{ auth()->user()->name }}</span>
 
                     <form method="POST" action="{{ route('logout') }}" class="shrink-0">
                         @csrf

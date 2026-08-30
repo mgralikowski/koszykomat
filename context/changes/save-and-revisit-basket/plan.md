@@ -503,30 +503,30 @@ CLAUDE.md) — run `ddev artisan migrate` locally against a fresh database first
 
 #### Automated
 
-- [x] 1.1 Migrations apply cleanly: `ddev artisan migrate:fresh`
-- [x] 1.2 Existing suite still passes: `ddev composer test`
-- [x] 1.3 Code style passes: `ddev composer lint`
+- [x] 1.1 Migrations apply cleanly: `ddev artisan migrate:fresh` — 48fbde5
+- [x] 1.2 Existing suite still passes: `ddev composer test` — 48fbde5
+- [x] 1.3 Code style passes: `ddev composer lint` — 48fbde5
 
 #### Manual
 
-- [x] 1.4 SavedBasket factory with items round-trips; array-shape method matches `BasketSession::lines()`
-- [x] 1.5 User delete cascades to baskets and items; Product delete removes only referencing items
+- [x] 1.4 SavedBasket factory with items round-trips; array-shape method matches `BasketSession::lines()` — 48fbde5
+- [x] 1.5 User delete cascades to baskets and items; Product delete removes only referencing items — 48fbde5
 
 ### Phase 2: Save, list and delete — owner-scoped
 
 #### Automated
 
-- [ ] 2.1 The privacy test passes: `ddev artisan test tests/Feature/Basket/SavedBasketPrivacyTest.php`
-- [ ] 2.2 Full suite passes: `ddev composer test`
-- [ ] 2.3 Code style passes: `ddev composer lint`
+- [x] 2.1 The privacy test passes: `ddev artisan test tests/Feature/Basket/SavedBasketPrivacyTest.php`
+- [x] 2.2 Full suite passes: `ddev composer test`
+- [x] 2.3 Code style passes: `ddev composer lint`
 
 #### Manual
 
-- [ ] 2.4 Naming and saving a basket lands on `/koszyki` with it listed
-- [ ] 2.5 Blank name, empty basket and over-cap saves show Polish messages and save nothing
-- [ ] 2.6 List page shows name, date and item count with no N+1
-- [ ] 2.7 Delete removes the basket and its items
-- [ ] 2.8 List page usable at phone width
+- [x] 2.4 Naming and saving a basket lands on `/koszyki` with it listed
+- [x] 2.5 Blank name, empty basket and over-cap saves show Polish messages and save nothing
+- [x] 2.6 List page shows name, date and item count with no N+1
+- [x] 2.7 Delete removes the basket and its items
+- [x] 2.8 List page usable at phone width
 
 ### Phase 3: Load into the session and re-compare
 
