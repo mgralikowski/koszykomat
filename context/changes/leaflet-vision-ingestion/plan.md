@@ -424,5 +424,5 @@ Production has never been migrated with real data beyond the seed, and the F-02 
 - [x] 3.5 The gold set covers all four mechanics and every offer on its five pages is hand-verified — 88eef4d
 - [x] 3.6 The three scores are recorded in `measurement.md` with the model and date — 88eef4d
 - [x] 3.7 The branch that fired matches the rule as written, not adjusted after seeing the numbers — 88eef4d
-- [x] 3.8 If Biedronka ships: five ingested Biedronka prices spot-checked against the page images
-- [x] 3.9 If Biedronka does not ship: ingest writes Lidl rows only and the homepage shows "brak danych" for Biedronka without naming a winner
+- [x] 3.8 If Biedronka ships: five ingested Biedronka prices spot-checked against the page images — 4ac526c
+- [x] 3.9 If Biedronka does not ship: ingest writes Lidl rows only and the homepage shows "brak danych" for Biedronka without naming a winner — 4ac526c
