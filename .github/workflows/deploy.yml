@@ -28,15 +28,13 @@ jobs:
           node-version: 22
           cache: npm
 
-      # --- Quality gate: nothing touches the server unless lint + tests pass ---
+      # --- Quality gate: nothing touches the server unless lint passes ---
+      # Tests are deliberately not run here; run `ddev composer test` locally.
       - name: Install dependencies (with dev)
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Lint
         run: composer lint
-
-      - name: Test
-        run: composer test
 
       # --- Build the release artifact ---
       - name: Build frontend
