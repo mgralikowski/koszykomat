@@ -7,8 +7,9 @@ use Illuminate\Contracts\Session\Session;
 /**
  * The user's basket while they are building it, kept in the session.
  *
- * Deliberately not a table: persisting a basket to an account is S-03's outcome, and this slice
- * would otherwise design the schema S-03 has to live with.
+ * Still not a table, now for a different reason: a basket only reaches the database when the user
+ * asks for it by name (App\Models\SavedBasket, FR-005). The working basket stays in the session,
+ * and loading a saved one replaces it through replaceWith().
  *
  * Every read and write of the basket goes through here, so quantity clamping, duplicate merging
  * and forgetting a stale comparison each have exactly one enforcement point. A controller that
@@ -99,6 +100,36 @@ final readonly class BasketSession
     public function clear(): void
     {
         $this->store([]);
+    }
+
+    /**
+     * Replace the whole basket in one write — how a saved basket is loaded (FR-005).
+     *
+     * One write, not a clear() followed by add() per line: store() invalidates the comparison and
+     * flashes the stale note on every call, so line-by-line loading would fire that note once per
+     * product. It also matters that the lines and the cleared comparison flag land together — a
+     * half-replaced basket sitting under a verdict computed from the previous one is the
+     * wrong-verdict failure the PRD guardrail exists to prevent.
+     *
+     * Quantities are clamped here rather than trusted: they were within bounds when the basket was
+     * saved, but max_quantity can be lowered afterwards, and PromoCalculator multiplies through
+     * Money::times($quantity) with no limit of its own.
+     *
+     * @param  list<array{product: string, quantity: int}>  $lines
+     */
+    public function replaceWith(array $lines): void
+    {
+        $map = [];
+
+        foreach ($lines as $line) {
+            // Merge rather than overwrite, so a caller that somehow passes the same product twice
+            // gets the same answer the add() path would give.
+            $map[$line['product']] = $this->clamp(
+                ($map[$line['product']] ?? 0) + (int) $line['quantity'],
+            );
+        }
+
+        $this->store($map);
     }
 
     /**

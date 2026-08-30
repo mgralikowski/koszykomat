@@ -23,6 +23,15 @@
         </div>
     @endif
 
+    {{-- Loading replaces the working basket. No JavaScript in this app means no confirm(), so the
+         warning is shown ahead of the act rather than at it — and only when a basket would
+         actually be lost. --}}
+    @if ($wouldReplace)
+        <p role="status" class="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
+            Masz produkty w koszyku — wczytanie zapisanego koszyka je zastąpi.
+        </p>
+    @endif
+
     @if ($atLimit)
         <p role="status" class="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
             Masz maksymalną liczbę zapisanych koszyków ({{ config('koszykomat.saved_baskets.max_per_user') }}).
@@ -65,6 +74,16 @@
                         </div>
 
                         <div class="flex shrink-0 items-center gap-2">
+                            @if ($basket->items->isNotEmpty())
+                                <form method="POST" action="{{ route('saved.load', $basket->id) }}">
+                                    @csrf
+                                    <button type="submit"
+                                            class="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
+                                        Wczytaj
+                                    </button>
+                                </form>
+                            @endif
+
                             <form method="POST" action="{{ route('saved.destroy', $basket->id) }}">
                                 @csrf
                                 @method('DELETE')

@@ -40,6 +40,11 @@ Route::middleware('auth')->prefix('koszyki')->name('saved.')->group(function () 
     Route::delete('/{savedBasket}', [SavedBasketController::class, 'destroy'])
         ->whereNumber('savedBasket')
         ->name('destroy');
+    // POST, not GET: loading replaces the working basket, so it needs the CSRF token. A GET load
+    // could be fired by any link or prefetch on another site — the same reasoning as POST /logout.
+    Route::post('/{savedBasket}/wczytaj', [SavedBasketController::class, 'load'])
+        ->whereNumber('savedBasket')
+        ->name('load');
 });
 
 // Deploy verification: returns the git SHA stamped into the release by CI.

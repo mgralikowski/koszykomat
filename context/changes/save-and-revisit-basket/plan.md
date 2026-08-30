@@ -516,31 +516,31 @@ CLAUDE.md) — run `ddev artisan migrate` locally against a fresh database first
 
 #### Automated
 
-- [x] 2.1 The privacy test passes: `ddev artisan test tests/Feature/Basket/SavedBasketPrivacyTest.php`
-- [x] 2.2 Full suite passes: `ddev composer test`
-- [x] 2.3 Code style passes: `ddev composer lint`
+- [x] 2.1 The privacy test passes: `ddev artisan test tests/Feature/Basket/SavedBasketPrivacyTest.php` — 34c1ac2
+- [x] 2.2 Full suite passes: `ddev composer test` — 34c1ac2
+- [x] 2.3 Code style passes: `ddev composer lint` — 34c1ac2
 
 #### Manual
 
-- [x] 2.4 Naming and saving a basket lands on `/koszyki` with it listed
-- [x] 2.5 Blank name, empty basket and over-cap saves show Polish messages and save nothing
-- [x] 2.6 List page shows name, date and item count with no N+1
-- [x] 2.7 Delete removes the basket and its items
-- [x] 2.8 List page usable at phone width
+- [x] 2.4 Naming and saving a basket lands on `/koszyki` with it listed — 34c1ac2
+- [x] 2.5 Blank name, empty basket and over-cap saves show Polish messages and save nothing — 34c1ac2
+- [x] 2.6 List page shows name, date and item count with no N+1 — 34c1ac2
+- [x] 2.7 Delete removes the basket and its items — 34c1ac2
+- [x] 2.8 List page usable at phone width — 34c1ac2
 
 ### Phase 3: Load into the session and re-compare
 
 #### Automated
 
-- [ ] 3.1 The load-fidelity test passes: `ddev artisan test tests/Feature/Basket/SavedBasketLoadTest.php`
-- [ ] 3.2 Full suite passes: `ddev composer test`
-- [ ] 3.3 Code style passes: `ddev composer lint`
+- [x] 3.1 The load-fidelity test passes: `ddev artisan test tests/Feature/Basket/SavedBasketLoadTest.php`
+- [x] 3.2 Full suite passes: `ddev composer test`
+- [x] 3.3 Code style passes: `ddev composer lint`
 
 #### Manual
 
-- [ ] 3.4 Loading a saved basket restores exactly the saved products and quantities
-- [ ] 3.5 "Porównaj" after a load produces a verdict describing the loaded basket
-- [ ] 3.6 No stale report renders directly after a load
-- [ ] 3.7 Replace warning appears only when the session basket is non-empty
-- [ ] 3.8 A basket saved before a refresh re-compares against current leaflet windows
-- [ ] 3.9 Whole flow works at phone width
+- [x] 3.4 Loading a saved basket restores exactly the saved products and quantities
+- [x] 3.5 "Porównaj" after a load produces a verdict describing the loaded basket
+- [x] 3.6 No stale report renders directly after a load
+- [x] 3.7 Replace warning appears only when the session basket is non-empty
+- [x] 3.8 A basket saved before a refresh re-compares against current leaflet windows
+- [x] 3.9 Whole flow works at phone width

@@ -55,6 +55,17 @@
         </div>
     @endif
 
+    {{-- Confirmations of something that just happened elsewhere and redirected here, e.g. a saved
+         basket loaded into the session. --}}
+    @if (session('status'))
+        <div class="mx-auto max-w-3xl px-4 pt-4">
+            <p role="status"
+               class="rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200">
+                {{ session('status') }}
+            </p>
+        </div>
+    @endif
+
     @yield('content')
 </body>
 </html>

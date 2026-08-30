@@ -37,6 +37,9 @@ class SavedBasketController extends Controller
             // Counted off the loaded collection rather than re-queried: the cap bounds this list,
             // so it is already entirely in memory.
             'atLimit' => $baskets->count() >= $this->maxPerUser(),
+            // Loading discards the working basket. With no JavaScript there is no confirm(), so
+            // the warning is rendered ahead of the act — and only when there is something to lose.
+            'wouldReplace' => ! $this->basket->isEmpty(),
         ]);
     }
 
@@ -101,6 +104,28 @@ class SavedBasketController extends Controller
         });
 
         return redirect()->route('saved.index');
+    }
+
+    /**
+     * Load a saved basket into the session, replacing whatever was there (FR-005).
+     *
+     * Lands the user back on the basket page rather than showing a report here: re-comparing is an
+     * explicit act, and the existing "Porównaj" button already prices whatever the session holds
+     * against today's data. That is the whole of "revisit after a refresh" — nothing about the
+     * saved rows needs to know the prices changed.
+     */
+    public function load(Request $request, int $savedBasket): RedirectResponse
+    {
+        $basket = $request->user()
+            ->savedBaskets()
+            ->with('items.product')
+            ->findOrFail($savedBasket);
+
+        $this->basket->replaceWith($basket->toBasketLines());
+
+        return redirect()
+            ->route('basket.index')
+            ->with('status', 'Wczytano koszyk „'.$basket->name.'". Kliknij „Porównaj", żeby policzyć go na aktualnych cenach.');
     }
 
     /**
