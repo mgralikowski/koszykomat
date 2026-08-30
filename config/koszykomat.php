@@ -43,4 +43,23 @@ return [
         'max_quantity' => 99,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Saved baskets
+    |--------------------------------------------------------------------------
+    |
+    | Bounds on what one account may keep (FR-005). The cap is not cosmetic
+    | either: the saved-basket list has no pagination and no search, so it stays
+    | readable only while it stays short, and an uncapped list would let one
+    | account grow its row count without limit. Both numbers are read in more
+    | than one place — the save validation and the list view's "you are at the
+    | limit" state — which is why they live here rather than inline in a rule.
+    |
+    */
+
+    'saved_baskets' => [
+        'max_per_user' => 20,
+        'max_name_length' => 60,
+    ],
+
 ];

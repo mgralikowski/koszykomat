@@ -31,6 +31,21 @@ class User extends Authenticatable
     }
 
     /**
+     * The baskets this account has kept (FR-005).
+     *
+     * This relation is also the scoping root for every saved-basket lookup: resolving through
+     * $user->savedBaskets() means another account's id is simply not in the result set, so it
+     * 404s rather than being fetched and then checked. The privacy NFR is the query, not a guard
+     * a later caller could forget.
+     *
+     * @return HasMany<SavedBasket, $this>
+     */
+    public function savedBaskets(): HasMany
+    {
+        return $this->hasMany(SavedBasket::class);
+    }
+
+    /**
      * There is no password to return. This exists only so the framework's password-shaped call
      * sites receive a string: SessionGuard passes it to hash_hmac() when issuing a remember-me
      * cookie, and null triggers a PHP 8.5 deprecation there.

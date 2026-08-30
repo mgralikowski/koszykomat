@@ -52,7 +52,7 @@ The product wedge — the one trait that, if removed, makes this indistinguishab
 | F-03 | leaflet-vision-ingestion         | (foundation) per-chain leaflet→structured-data ingestion + CLI trigger | F-01      | FR-006, FR-009                    | done |
 | S-01 | guest-fixed-basket-comparison    | (guest) see a fixed example-basket comparison + verdict on home   | F-01          | FR-001, FR-007, US-01             | done |
 | S-02 | basket-builder-comparison-report | build a basket and generate the full Lidl vs Biedronka report     | S-01, F-02    | FR-002, FR-003, FR-004, FR-008, US-01 | done |
-| S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | proposed |
+| S-03 | save-and-revisit-basket          | save a basket and return to re-compare it after a refresh         | S-02          | FR-005                            | in-progress |
 | S-04 | nightly-refreshed-real-data      | get comparisons on real, nightly-refreshed leaflet data           | F-03, S-01    | FR-006, FR-009                    | proposed |
 
 ## Streams
@@ -158,7 +158,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** mostly standard persistence + ownership scoping; low technical risk. The load-bearing requirement is the privacy NFR — saved baskets must never leak across accounts — so authorization scoping is the thing to get right.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-04: Comparisons on real, nightly-refreshed leaflet data
 
