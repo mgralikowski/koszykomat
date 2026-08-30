@@ -146,8 +146,8 @@ return [
         'kawa-ziarnista-1kg' => [
             'name' => 'Kawa ziarnista 1 kg',
             'chains' => [
-                'lidl' => ['patterns' => ['/kawa\\s+ziarnista\\s+1\\s*kg/iu'], 'size_label' => '1 kg'],
-                'biedronka' => ['patterns' => ['/kawa\\s+ziarnista\\s+1\\s*kg/iu'], 'size_label' => '1 kg'],
+                'lidl' => ['patterns' => ['/kawa\\s+ziarnista.{0,45}\\b1\\s*kg\\b/isu'], 'size_label' => '1 kg'],
+                'biedronka' => ['patterns' => ['/kawa\\s+ziarnista.{0,45}\\b1\\s*kg\\b/isu'], 'size_label' => '1 kg'],
             ],
         ],
 
@@ -156,6 +156,41 @@ return [
             'chains' => [
                 'lidl' => ['patterns' => ['/czekolada\\s+mleczna/iu'], 'size_label' => '100 g'],
                 'biedronka' => ['patterns' => ['/czekolada\\s+mleczna/iu'], 'size_label' => '100 g'],
+            ],
+        ],
+
+        // Declared for one chain only, on purpose. The catalogue is chain-neutral, so a product
+        // with a single listing is a legitimate row that simply cannot be compared yet — the
+        // whole-basket rule reports "brak danych" for it until the other chain's equivalent is
+        // declared here too. Inventing a counterpart to make the basket comparable is exactly the
+        // false pairing FR-008 forbids: Lidl's "Chleb typu włoskiego 500 g" is not Biedronka's
+        // "Chleb orkiszowy 410 g", however convenient a comparison would be.
+
+        'cukier-bialy-1kg' => [
+            'name' => 'Cukier biały 1 kg',
+            'chains' => [
+                'biedronka' => ['patterns' => ['/cukier\\s+biały.{0,20}\\b1\\s*kg\\b/isu'], 'size_label' => '1 kg'],
+            ],
+        ],
+
+        'olej-rzepakowy-2l' => [
+            'name' => 'Olej rzepakowy 2 l',
+            'chains' => [
+                'biedronka' => ['patterns' => ['/olej\\s+rzepakowy.{0,25}\\b2\\s*l\\b/isu'], 'size_label' => '2 l'],
+            ],
+        ],
+
+        'sok-100-1l' => [
+            'name' => 'Sok 100% 1 l',
+            'chains' => [
+                'biedronka' => ['patterns' => ['/sok\\s+100%.{0,25}\\b1\\s*l\\b/isu'], 'size_label' => '1 l'],
+            ],
+        ],
+
+        'woda-zrodlana-6x175l' => [
+            'name' => 'Woda źródlana 6 × 1,75 l',
+            'chains' => [
+                'biedronka' => ['patterns' => ['/woda\\s+źródlana.{0,30}6\\s*x\\s*1,75/isu'], 'size_label' => '6 × 1,75 l'],
             ],
         ],
 

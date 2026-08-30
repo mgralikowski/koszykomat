@@ -1,7 +1,7 @@
 ---
 change_id: leaflet-vision-ingestion
 title: Leaflet vision ingestion
-status: implementing
+status: implemented
 created: 2026-08-30
 updated: 2026-08-30
 archived_at: null

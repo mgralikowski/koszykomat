@@ -44,6 +44,28 @@ What this measurement does **not** establish:
 - **Coverage of all five mechanics.** These pages produced `one_plus_one`, `loyalty_card` and `second_for_fixed`, but no `simple` and no `conditional_unit_price`. `vision.md` §10 asked for all four original mechanics; three of four is what the sample gave.
 - **Whether prices are right in absolute terms**, as opposed to consistent with a label the model itself proposed.
 
+## Spot-check of the ingested rows (2026-08-30)
+
+After the pairing map was widened, a full run wrote 10 Biedronka rows, 5 of them trusted. Each was
+compared against the hand-checked gold set:
+
+| Product | Gold set | Ingested | |
+| --- | --- | --- | --- |
+| Mleko UHT 3,2% 1 l | 4,49 / 1,99 | 4,49 / 1,99 | match |
+| Olej rzepakowy Kujawski 2 l | 12,99 / 11,98 | 12,99 / 11,98 | match |
+| Sok 100% Riviva 1 l | 4,79 / 2,49 | 4,79 / 2,49 | match |
+| Woda Żywiec Zdrój 6×1,75 l | 3,35 / 1,68 | 3,35 / 1,68 | match |
+| Cukier biały 1 kg | 1,99 / — | 1,99 / **0,99** | differs |
+
+Four of five agree exactly. The fifth is the same non-determinism the price-accuracy figure already
+caught: on the first read the model reported no promotional price for the sugar, on a later read it
+reported 0,99. Which is right is not settled here — the gold set's sugar row is one the hand check
+left as the model first wrote it, so it is not independent evidence either.
+
+That is the honest state: the numbers the model agrees with itself on are stable and match, and the
+one it disagrees with itself on is exactly where the gold set is weakest. It is also a second
+argument for rebuilding the gold set from the images alone.
+
 ## What to do before trusting this further
 
 1. Rebuild the gold set from the page images alone, without the model's reading as a starting point, and re-run. That is the only way the recall figure becomes meaningful.
