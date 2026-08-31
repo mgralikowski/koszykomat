@@ -53,7 +53,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
-            "@php artisan test --exclude-group=known-defect,mysql"
+            "@php artisan test --exclude-group=known-defect --exclude-group=mysql"
         ],
         "test:all": [
             "@php artisan config:clear --ansi @no_additional_args",

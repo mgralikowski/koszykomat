@@ -38,7 +38,7 @@ Research proved that `PromoCalculator::conditional()` is correct only at `requir
 - `PromoCalculator` is pure over an unsaved `PriceEntry` — the whole mechanic matrix needs **no database** (`app/Pricing/PromoCalculator.php:23-37`). This is cheaper than the integration layer the test plan originally named.
 - Groups apply per **method**, not per provider case — so a provider mixing N=2 (passing) and N=3 (failing) cases cannot be tagged selectively. Verified: the matrix must split into an ungrouped method and a `#[Group('known-defect')]` method per affected mechanic.
 - A shell env var **overrides** `phpunit.xml`'s `<env>` block (verified: `Connection: mysql, Database: koszykomat_test`). The MySQL lane therefore needs **no `phpunit.xml` change** — env vars plus `--group=mysql` are sufficient.
-- `--exclude-group` accepts a comma list through `artisan test` (verified).
+- `--exclude-group` must be **repeated per group**, not comma-separated. `--exclude-group=a,b` parses without error and silently filters *nothing*; `--exclude-group=a --exclude-group=b` filters correctly. Corrected during Phase 2 after the comma form let all six known-defect cases into the gate — the planning-time check had run the comma form when no test carried either group, so "passed" proved only that the flag parses.
 - The forced-overbuy figure is a **disclosure**, not a total component (`PromoCalculator.php:12-15`; PRD §Business Logic). A test that adds overbuy units into an expected total asserts the opposite of the PRD.
 
 ## What We're NOT Doing
@@ -107,11 +107,11 @@ Make the real-leaflet shapes buildable, make an incoherent row impossible by any
 
 **File**: `composer.json`
 
-**Intent**: Keep `composer test` a usable pre-push gate while the known defect stands, and give the MySQL lane an explicit, idempotent entry point. Verified that no `phpunit.xml` change is required — a shell env var overrides its `<env>` block, and `--exclude-group` accepts a comma list.
+**Intent**: Keep `composer test` a usable pre-push gate while the known defect stands, and give the MySQL lane an explicit, idempotent entry point. Verified that no `phpunit.xml` change is required — a shell env var overrides its `<env>` block. Note the `--exclude-group` repetition rule in Key Discoveries: a comma list silently filters nothing.
 
 **Contract**: four scripts —
 
-- `test` → config clear, then `artisan test --exclude-group=known-defect,mysql` (the gate)
+- `test` → config clear, then `artisan test --exclude-group=known-defect --exclude-group=mysql` (the gate)
 - `test:all` → `artisan test` (everything; expected red while the defect stands)
 - `test:mysql` → `DB_CONNECTION=mysql DB_DATABASE=koszykomat_test artisan test --group=mysql`
 - `test:mysql:setup` → create the `koszykomat_test` schema, grant the `db` user, migrate; idempotent, run once per environment
@@ -387,30 +387,30 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 #### Automated
 
-- [x] 1.1 `composer lint` passes
-- [x] 1.2 `composer test` passes with no lost tests
-- [x] 1.3 `PriceEntryGateTest` passes with migrated call sites
-- [x] 1.4 Coherence guard throws on a cross-chain row
-- [x] 1.5 `composer test:mysql:setup` completes and is re-runnable
+- [x] 1.1 `composer lint` passes — 70a0339
+- [x] 1.2 `composer test` passes with no lost tests — 70a0339
+- [x] 1.3 `PriceEntryGateTest` passes with migrated call sites — 70a0339
+- [x] 1.4 Coherence guard throws on a cross-chain row — 70a0339
+- [x] 1.5 `composer test:mysql:setup` completes and is re-runnable — 70a0339
 
 #### Manual
 
-- [x] 1.6 `composer test:all` runs without configuration errors
-- [x] 1.7 `LogicException` message names both chains
+- [x] 1.6 `composer test:all` runs without configuration errors — 70a0339
+- [x] 1.7 `LogicException` message names both chains — 70a0339
 
 ### Phase 2: Till-total matrix (unit)
 
 #### Automated
 
-- [ ] 2.1 `composer test` passes — every green-lane case
-- [ ] 2.2 `composer test:all` fails only in `known-defect`, matching research §A.3
-- [ ] 2.3 Each failing case reports independently with threshold and quantity
-- [ ] 2.4 `composer lint` passes
+- [x] 2.1 `composer test` passes — every green-lane case
+- [x] 2.2 `composer test:all` fails only in `known-defect`, matching research §A.3
+- [x] 2.3 Each failing case reports independently with threshold and quantity
+- [x] 2.4 `composer lint` passes
 
 #### Manual
 
-- [ ] 2.5 Three expected values spot-checked against leaflet or PRD text
-- [ ] 2.6 A failing diff reads as engine-vs-till without opening source
+- [x] 2.5 Three expected values spot-checked against leaflet or PRD text
+- [x] 2.6 A failing diff reads as engine-vs-till without opening source
 
 ### Phase 3: Verdict on deliberate near-ties (integration)
 
