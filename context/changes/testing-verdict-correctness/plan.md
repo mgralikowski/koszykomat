@@ -443,11 +443,11 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 #### Automated
 
-- [x] 5.1 `composer lint` passes
-- [x] 5.2 `composer test` passes
-- [x] 5.3 No `TBD` remains in §6.1 or §6.2
+- [x] 5.1 `composer lint` passes — 5e042a0
+- [x] 5.2 `composer test` passes — 5e042a0
+- [x] 5.3 No `TBD` remains in §6.1 or §6.2 — 5e042a0
 
 #### Manual
 
-- [x] 5.4 §6.1 alone is enough to add a sixth mechanic's tests
-- [x] 5.5 §5 note makes clear that green ≠ defect gone
+- [x] 5.4 §6.1 alone is enough to add a sixth mechanic's tests — 5e042a0
+- [x] 5.5 §5 note makes clear that green ≠ defect gone — 5e042a0
