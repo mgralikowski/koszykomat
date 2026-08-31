@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-08-30
+> Last updated: 2026-08-31
 
 ## 1. Strategy
 
@@ -76,7 +76,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Verdict correctness on real shapes | Prove the till-total for every promo mechanic on the offer shapes real leaflets actually produce, on fixtures that cannot encode an impossible row | #1, #6 | unit + integration | implementing | `context/changes/testing-verdict-correctness/` |
+| 1 | Verdict correctness on real shapes | Prove the till-total for every promo mechanic on the offer shapes real leaflets actually produce, on fixtures that cannot encode an impossible row | #1, #6 | unit + integration | complete | `context/changes/testing-verdict-correctness/` |
 | 2 | Report as the user reads it | Prove the report states the facts that make the verdict auditable: validity window per price, forced-overbuy cost, explicit matched pair | #2 | integration (HTTP content) | not started | — |
 | 3 | Honest abstention | Prove "brak danych" wins over a guess when data is expired, incomplete or unpaired | #3 | integration + time travel | not started | — |
 | 4 | Account boundary and input contract | Prove owner-only access on every saved-basket route, and that the server rejects quantities the domain cannot price | #5, #7 | integration (HTTP) | not started | — |
@@ -146,7 +146,9 @@ phase lands; before that, the gate is planned.
 | Gate | Where | Required? | Catches |
 |---|---|---|---|
 | Pint style check (`composer lint`) | local + CI (pre-deploy) | required — already wired | style drift |
-| PHPUnit suite (`composer test`) | local only | required before push — deliberately not in CI (`98f6a3a`) | logic regressions |
+| PHPUnit suite (`composer test`) | local only | required before push — deliberately not in CI (`98f6a3a`); runs a **filtered** suite, see the lane note below | logic regressions |
+| Known-defect suite (`composer test:all`) | local, ad hoc | informational — expected red while a documented defect stands | that a documented defect is still present |
+| Fixture-shape suite (`composer test:mysql`) | local, ad hoc | required after §3 Phase 1 — the integration gate §5 anticipated | fixtures MySQL 8.0 would reject |
 | Promo-mechanic total assertions | in the PHPUnit suite | required — mandated by `CLAUDE.md`; hardened by §3 Phase 1 | a mispriced mechanic flipping the verdict |
 | Fixture-integrity assertions | in the PHPUnit suite | required after §3 Phase 1 | factories producing rows production cannot hold |
 | Report-content assertions | in the PHPUnit suite | required after §3 Phase 2 | the verdict losing its audit trail |
@@ -164,6 +166,33 @@ addresses this, because it is a workflow decision rather than a test gap. If
 the local-only rule ever slips, the fix is to restore the CI test step, not
 to add a phase.
 
+**Test lanes (added 2026-08-31 by §3 Phase 1).** A green `composer test` does
+NOT mean every test passed — it runs a filtered suite:
+
+| Command | Runs | Expected |
+|---|---|---|
+| `composer test` | everything except `known-defect` and `mysql` | green — this is the pre-push gate |
+| `composer test:all` | adds `known-defect`; still excludes `mysql` | **red** while a documented defect stands |
+| `composer test:mysql` | only `mysql`, against MySQL 8.0 | green |
+| `composer test:mysql:setup` | one-off: create + grant + migrate `koszykomat_test` | idempotent |
+
+`composer test:all` is red today by design: Phase 1 documented that
+`PromoCalculator::conditional()` is correct only at `required_quantity = 2`,
+while real Lidl leaflets print N=3. Seven cases assert the till truth and fail.
+They are expected to turn green with no edit once that defect is fixed — until
+then, red there is a standing record, not a broken suite. **If it ever goes
+green without a fix, the filtering broke, not the engine.**
+
+Two mechanical traps, both found the hard way:
+
+- `--exclude-group` must be **repeated per group**. `--exclude-group=a,b`
+  parses without error and silently filters *nothing* — it let every
+  known-defect case into the gate.
+- The `mysql` group must never run in a SQLite lane: its acceptance cases would
+  pass vacuously and its rejection cases would fail. `composer test:all`
+  excludes it, and the class hard-fails on the wrong driver rather than
+  skipping.
+
 ## 6. Cookbook Patterns
 
 How to add new tests in this project. Each sub-section is filled in once
@@ -172,13 +201,73 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a promo-mechanic pricing test
 
-- TBD — see §3 Phase 1, for the till-total pattern (Risk #1: a mechanic
-  mispriced on a real-leaflet shape flips the verdict).
+Reference: `tests/Unit/Pricing/PromoCalculatorTest.php` (totals),
+`tests/Feature/Pricing/BasketComparatorVerdictTest.php` (verdicts).
+
+- **Assert the till total on the unit layer.** `PromoCalculator` reads
+  attributes off a `PriceEntry` and returns a `LineCost`, so an unsaved model
+  is the whole fixture — no database, no factory, milliseconds per case. Reach
+  for an integration test only when the *verdict* is what you are asserting.
+- **Derive the expected value from the leaflet or the PRD, never from the
+  engine.** Writing `regular + second × (N − 1)` reproduces the formula under
+  test and would pass against a bug. Quote the leaflet phrase in the docblock
+  and put the derivation in the data-set key, so a failure explains itself
+  without opening the source.
+- **Sweep the thresholds real leaflets print, not just the seeded one.** The
+  N=3 defect survived five green mechanic tests because every seeded row uses
+  N=2, the one value where the buggy formula is right. Observed thresholds so
+  far: **2, 3, 6**. Use `#[DataProvider]` and boundary quantities
+  {1, N−1, N, N+1, 2N}.
+- **Cover the unpriceable shapes too.** A `conditional_unit_price` row with a
+  null `promo_price` is not an edge case — it is the state every real Lidl
+  conditional row is in, and it must yield `null`, never a guess.
+- **Overbuy is disclosed, never charged.** The shopper pays for exactly the
+  quantity asked for (`PromoCalculator` docblock; PRD §Business Logic). Never
+  add forced-overbuy units into an expected total. Assert
+  `promoRequiredMoreItems` separately — and remember a *remainder* is not a
+  shortfall: at N=6, quantity 7, a group fired and the flag stays down.
+- **A verdict needs two chains.** With one chain `decide()` returns a winner
+  with a zero margin — a verdict over nothing, and a shape production never
+  holds. Engineer a deliberate near-tie so the mechanic decides the outcome; a
+  wide margin survives almost any mispricing and proves nothing.
+- **A test that documents a known defect goes in the `known-defect` group.**
+  It then runs under `composer test:all`, stays out of the pre-push gate, and
+  turns green by itself when the defect is fixed. Groups apply per *method*,
+  so a mechanic needs two methods — one for thresholds that pass, one tagged —
+  rather than one provider mixing both.
 
 ### 6.2 Adding or changing a factory
 
-- TBD — see §3 Phase 1, for the fixture-integrity pattern (Risk #6: a
-  default row must be a shape production can hold).
+Reference: `database/factories/PriceEntryFactory.php`,
+`tests/Feature/Database/PriceEntryFactoryTest.php`,
+`tests/Feature/Database/FixtureShapeMySqlTest.php`.
+
+- **Never pin only the listing.** `PriceEntry::factory()->for($listing,
+  'networkProduct')` replaces the derivation that keeps the leaflet in the same
+  chain, leaving a fresh Leaflet in a chain of its own. Use `forListing($listing)`,
+  or pin **both** parents from one network (`->for($leaflet)->for($listing,
+  'networkProduct')`, as `BasketComparatorTrustTest` does). The factory's
+  `configure()` guard throws on an incoherent row, so a `LogicException`
+  mentioning "cross-chain" means the fixture is wrong, not the guard.
+- **Add every new state to the coherence provider.** `conditional_unit_price`
+  was added to the factory and left out of that list, so the fifth mechanic's
+  state went uncovered. `PriceEntryFactoryTest::promoStates()` is the list.
+- **Keep a guard test that proves the guard bites.** Without
+  `test_pinning_only_the_listing_is_refused()`, the coherence tests would pass
+  on a factory whose guard had been deleted — green proving only that nobody
+  tried.
+- **Compare the two chains to each other; do not re-derive the factory's
+  logic.** The assertion is `leaflet.network_id === networkProduct.network_id`,
+  not a recomputation of how the parent was resolved.
+- **Range and type validity belong in the `mysql` group.** SQLite emits a bare
+  `numeric` column and ignores integer width, so it stores rows MySQL 8.0
+  rejects. Anything asserting what a column *permits* goes in
+  `FixtureShapeMySqlTest` and runs via `composer test:mysql`. Assert both
+  directions — rows accepted **and** out-of-range rows rejected; an acceptance-only
+  class passes vacuously.
+- **Defaults are load-bearing.** Threshold parameters were added with their
+  original values as defaults precisely so no existing test moved. Keep it that
+  way when parameterising a state.
 
 ### 6.3 Adding a test for a rendered report or view
 
@@ -203,8 +292,22 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.7 Per-rollout-phase notes
 
-(Filled in by `/10x-implement` after each phase lands — two or three lines
-capturing anything surprising the phase taught.)
+**Phase 1 — Verdict correctness on real shapes (2026-08-31).** Three things
+surprised us, all of the same species: a green result that proved nothing.
+
+- The five mandatory mechanic tests could never have caught the N=3 defect,
+  because they seed a single chain — they assert a total, and Risk #1 is about a
+  verdict. Coverage counted; construction did not.
+- `--exclude-group=a,b` was verified during planning by running it when no test
+  carried either group. "Passed" proved only that the flag parses. The first
+  real run let all six failures into the gate.
+- Dropping the MySQL test schema looked like a failure mode and is not: Laravel
+  creates a missing database itself, and a database-level grant survives
+  `DROP DATABASE`. The one-off setup step earns its keep for the **grant**.
+
+Also worth carrying forward: the factory guard that refuses a cross-chain row
+was cheaper and stronger than any test asserting the same thing, because it
+fires at the point of creation in every test, present and future.
 
 ## 7. What We Deliberately Don't Test
 
@@ -231,7 +334,7 @@ contributors should respect these unless the underlying assumption changes.
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-08-30
+- Strategy (§1–§5) last reviewed: 2026-08-31 (§2 response guidance, §4 divergence note, §5 lanes and §7 revised by §3 Phase 1 research and implementation)
 - Stack versions last verified: 2026-08-30
 - AI-native tool references last verified: 2026-08-30
 

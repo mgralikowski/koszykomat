@@ -430,24 +430,24 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 #### Automated
 
-- [x] 4.1 `composer test` passes — coherence across all five states and `forListing()`
-- [x] 4.2 `composer test:mysql` passes — acceptance and rejection
-- [x] 4.3 The `mysql` group does not run in the default `composer test`
-- [x] 4.4 `composer lint` passes
+- [x] 4.1 `composer test` passes — coherence across all five states and `forListing()` — 1d462c8
+- [x] 4.2 `composer test:mysql` passes — acceptance and rejection — 1d462c8
+- [x] 4.3 The `mysql` group does not run in the default `composer test` — 1d462c8
+- [x] 4.4 `composer lint` passes — 1d462c8
 
 #### Manual
 
-- [x] 4.5 `composer test:mysql` fails clearly when the schema is missing
+- [x] 4.5 `composer test:mysql` fails clearly when the schema is missing — 1d462c8
 
 ### Phase 5: Cookbook and lessons
 
 #### Automated
 
-- [ ] 5.1 `composer lint` passes
-- [ ] 5.2 `composer test` passes
-- [ ] 5.3 No `TBD` remains in §6.1 or §6.2
+- [x] 5.1 `composer lint` passes
+- [x] 5.2 `composer test` passes
+- [x] 5.3 No `TBD` remains in §6.1 or §6.2
 
 #### Manual
 
-- [ ] 5.4 §6.1 alone is enough to add a sixth mechanic's tests
-- [ ] 5.5 §5 note makes clear that green ≠ defect gone
+- [x] 5.4 §6.1 alone is enough to add a sixth mechanic's tests
+- [x] 5.5 §5 note makes clear that green ≠ defect gone
