@@ -106,7 +106,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 | time control | `travelTo` / time freezing (framework) | ^13.8 | Required by Phase 3 for leaflet validity windows; checked: 2026-08-30 |
 | queue / console assertions | `Queue::fake`, `$this->artisan(...)` | ^13.8 | Available for the ingestion command; checked: 2026-08-30 |
 | style | Pint (Laravel preset) | ^1.27 | `composer lint` / `composer fix`; already gated in CI |
-| e2e / browser | none | — | Deliberate: no e2e layer is proposed by this rollout; feature tests cover the flows |
+| e2e / browser | Playwright (`@playwright/test`) + Playwright CLI | ^1 | *Added 2026-08-31.* Runs on the **host** against `https://koszykomat.ddev.site`, not inside the container — see the browser-layer note below. Deliberately narrow: it covers NFRs no feature test can reach, not the §2 risks |
 | accessibility | none yet | — | Not covered by any phase in §3; out of scope for this rollout |
 | AI-native | none | — | No phase justified one under cost × signal |
 
@@ -130,6 +130,29 @@ and a price above the decimal column's range — both stored by SQLite, both
 parser output into those columns, a fixture can encode a row production cannot
 hold and the suite stays green. That is Risk #6 exactly, and a narrow MySQL
 lane is the only layer that sees it — see §7.
+
+**Browser layer (added 2026-08-31).** §4 previously read "e2e / browser: none —
+deliberate". That line is now narrowed rather than reversed, and the reasoning
+is worth keeping, because it decides what an E2E test here may and may not claim.
+
+What E2E does *not* buy: Risk #2 (the report's audit trail) and Risk #5
+(saved-basket ownership) are already owned by §3 Phases 2 and 4 as Laravel HTTP
+feature tests. Those are faster, hermetic and assert the same facts. Driving a
+browser at them would add cost and flakiness for no new signal, so the browser
+layer must not duplicate them.
+
+What only a browser can see: the PRD's two NFRs that no feature test touches —
+"mobile-first: the whole flow (login → basket → report) is fully usable on a
+phone", and the survival of a real session across the full path, where auth,
+CSRF, redirects and the session store all have to agree. A feature test asserts
+each hop; only a browser asserts the journey.
+
+**The `/_test/login` door.** Auth is OAuth-only (FR-002) and Playwright cannot
+drive Google, so `routes/web.php` registers a session bypass **in the local
+environment only**, guarded twice and pinned by
+`tests/Feature/Auth/TestLoginRouteTest.php`. That test is not optional
+scaffolding: without it the bypass is one misconfigured `APP_ENV` away from
+being a credential-free entrance to every account.
 
 **Stack grounding tools (current session):**
 - Docs: Context7 (`/websites/laravel_13_x`) — verified that `Queue::fake`, console-command assertions and time-travel helpers are current in Laravel 13.x; checked: 2026-08-30
@@ -328,13 +351,20 @@ contributors should respect these unless the underlying assumption changes.
   narrow fixture-integrity class may run against MySQL, because nothing else
   can catch a fixture row production would reject. (Source: §4 divergence
   note, as revised.)
+- **E2E coverage of the §2 risks** — *added 2026-08-31, when the browser layer
+  landed.* The browser suite covers the mobile-first NFR and end-to-end session
+  survival only. Risks #2 and #5 stay with the HTTP feature tests of §3 Phases 2
+  and 4: a browser asserting the same facts would be slower and flakier for no
+  extra signal. If a browser test ever starts asserting a §2 risk, that is
+  duplication to delete, not coverage to celebrate. (Source: §4 browser-layer
+  note.)
 - **A nightly-refresh scheduler test** — no schedule is wired yet (roadmap
   S-04 is `proposed`); testing it now would mean inventing the code under
   test. Re-evaluate when S-04 lands. (Source: Phase 3 challenger pass.)
 
 ## 8. Freshness Ledger
 
-- Strategy (§1–§5) last reviewed: 2026-08-31 (§2 response guidance, §4 divergence note, §5 lanes and §7 revised by §3 Phase 1 research and implementation)
+- Strategy (§1–§5) last reviewed: 2026-08-31 (§2 response guidance, §4 divergence note, §5 lanes and §7 revised by §3 Phase 1 research and implementation; §4 browser layer and its §7 boundary added the same day when Playwright landed)
 - Stack versions last verified: 2026-08-30
 - AI-native tool references last verified: 2026-08-30
 

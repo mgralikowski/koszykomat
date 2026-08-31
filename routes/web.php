@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SavedBasketController;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class);
@@ -46,6 +48,29 @@ Route::middleware('auth')->prefix('koszyki')->name('saved.')->group(function () 
         ->whereNumber('savedBasket')
         ->name('load');
 });
+
+// Test-only door into a session, for browser (E2E) tests. The only real way in is Google OAuth
+// (FR-002) and Playwright cannot drive Google — so browser tests need a local entrance or they
+// cannot reach the logged-in half of the product at all.
+//
+// This is an authentication bypass, so it is guarded twice: the route is only registered in the
+// local environment, and the handler refuses again at request time. tests/Feature/Auth/
+// TestLoginRouteTest.php asserts it stays shut anywhere else. Never relax either guard.
+if (app()->environment('local')) {
+    Route::get('/_test/login', function () {
+        abort_unless(app()->environment('local'), 404);
+
+        $user = User::firstOrCreate(
+            ['email' => 'e2e@koszykomat.test'],
+            ['name' => 'E2E', 'email_verified_at' => now()],
+        );
+
+        Auth::login($user);
+        request()->session()->regenerate();
+
+        return redirect()->route('basket.index');
+    })->name('test.login');
+}
 
 // Deploy verification: returns the git SHA stamped into the release by CI.
 // CI fails the deploy when this does not match the pushed commit (stale opcache guard).

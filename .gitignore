@@ -61,3 +61,9 @@ Thumbs.db
 # Scoped to the 10x-* namespace so project-owned skills stay tracked.
 /.claude/skills/10x-*/
 /.claude/prompts/m1l*.md
+
+# Playwright (E2E). The saved storageState is a live session for the local test
+# account — it is a credential, never a fixture, so it stays out of the repo.
+/playwright/.auth
+/playwright-report
+/test-results
