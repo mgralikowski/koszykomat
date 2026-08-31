@@ -368,7 +368,9 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 ## Migration Notes
 
-`composer test:mysql:setup` must be run once per environment before the `mysql` group can run. It creates `koszykomat_test`, grants the `db` user, and migrates — all idempotent. Already verified working on this machine, including the grant, which is the step that fails first without it.
+`composer test:mysql:setup` must be run once per environment before the `mysql` group can run. It creates `koszykomat_test`, grants the `db` user, and migrates — all idempotent.
+
+*Corrected during Phase 4.* The step that actually matters is the **GRANT**, not the CREATE: Laravel 11+ creates a missing database by itself, and a MySQL database-level grant survives `DROP DATABASE`. So dropping the schema is not a failure mode — the lane self-heals — while a missing grant fails with `SQLSTATE[HY000] [1044] Access denied`. `FixtureShapeMySqlTest::setUp()` therefore catches that and names the setup command, since the raw driver error states the user and schema but not the remedy. Verified end to end from a genuinely clean state: schema dropped and grant revoked → actionable failure; `test:mysql:setup` → 13 migrations; `test:mysql` → 11 passed.
 
 ## References
 
@@ -416,26 +418,26 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 #### Automated
 
-- [x] 3.1 `composer test` passes — pivot and tie cases
-- [x] 3.2 `composer test:all` shows the real-flip case failing as measured
-- [x] 3.3 `composer lint` passes
+- [x] 3.1 `composer test` passes — pivot and tie cases — 91d1d58
+- [x] 3.2 `composer test:all` shows the real-flip case failing as measured — 91d1d58
+- [x] 3.3 `composer lint` passes — 91d1d58
 
 #### Manual
 
-- [x] 3.4 The pivot case's two quantities genuinely flip the winner
+- [x] 3.4 The pivot case's two quantities genuinely flip the winner — 91d1d58
 
 ### Phase 4: Fixture integrity — coherence and production-holdable shapes
 
 #### Automated
 
-- [ ] 4.1 `composer test` passes — coherence across all five states and `forListing()`
-- [ ] 4.2 `composer test:mysql` passes — acceptance and rejection
-- [ ] 4.3 The `mysql` group does not run in the default `composer test`
-- [ ] 4.4 `composer lint` passes
+- [x] 4.1 `composer test` passes — coherence across all five states and `forListing()`
+- [x] 4.2 `composer test:mysql` passes — acceptance and rejection
+- [x] 4.3 The `mysql` group does not run in the default `composer test`
+- [x] 4.4 `composer lint` passes
 
 #### Manual
 
-- [ ] 4.5 `composer test:mysql` fails clearly when the schema is missing
+- [x] 4.5 `composer test:mysql` fails clearly when the schema is missing
 
 ### Phase 5: Cookbook and lessons
 
