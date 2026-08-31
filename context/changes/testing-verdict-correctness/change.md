@@ -1,7 +1,7 @@
 ---
 change_id: testing-verdict-correctness
 title: Test rollout phase 1 — verdict correctness on real leaflet shapes
-status: implemented
+status: impl_reviewed
 created: 2026-08-30
 updated: 2026-08-31
 archived_at: null
