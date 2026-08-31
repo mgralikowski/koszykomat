@@ -1,0 +1,169 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Ingestion/Drivers/Lidl/LidlHtmlDiscoverer.php
+
+		-
+			message: '#^Offset 1 on array\{array\<int, mixed\>, string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Ingestion/Drivers/Lidl/PdfTextParser.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<string\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Ingestion/Validation/GateVerdict.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:validOn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/PriceEntry.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:validOn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/PriceEntry.php
+
+		-
+			message: '#^Parameter \#1 \$promoType of method App\\Pricing\\Scenario\:\:allows\(\) expects App\\Enums\\PromoType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Pricing/BasketComparator.php
+
+		-
+			message: '#^Parameter \$validFrom of class App\\Pricing\\LinePrice constructor expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Pricing/BasketComparator.php
+
+		-
+			message: '#^Parameter \$validTo of class App\\Pricing\\LinePrice constructor expects Illuminate\\Support\\Carbon, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Pricing/BasketComparator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Pricing/BasketLine.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:ConditionalUnitPrice is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:LoyaltyCard is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:None is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:OnePlusOne is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:SecondForFixed is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\PromoType\:\:Simple is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Method App\\Pricing\\PromoCalculator\:\:cost\(\) never returns App\\Pricing\\LineCost so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Parameter \#2 \$appliedPromo of class App\\Pricing\\LineCost constructor expects App\\Enums\\PromoType, string given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Pricing/PromoCalculator.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: tests/Feature/Database/LeafletValidityScopeTest.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: tests/Feature/Database/LeafletValidityScopeTest.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method forbiddenParameters\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method greaterThanOrEqualTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method isConditional\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method lessThanOrEqualTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method requiredParameters\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: tests/Feature/Database/PricePromoSeedTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Unit/ExampleTest.php

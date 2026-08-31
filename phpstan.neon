@@ -1,0 +1,18 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    # 36 pre-existing errors recorded on 2026-08-31 so the hook starts green.
+    # The baseline is a debt ledger, not an approval — 11 of the 36 are in app/Pricing.
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - database
+        - tests
+
+    level: 5
+
+    # Laravel's container and facades resolve at runtime; Larastan's extension
+    # teaches PHPStan most of it, but the compiled containers are not source.
+    excludePaths:
+        - bootstrap/cache
