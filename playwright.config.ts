@@ -32,6 +32,9 @@ export default defineConfig({
             name: 'desktop',
             use: { ...devices['Desktop Chrome'], storageState },
             dependencies: ['setup'],
+            // A phone-width spec asserts nothing on a 1280px viewport — it would pass trivially
+            // and read as coverage. `mobile-*.spec.ts` runs in the mobile project only.
+            testIgnore: /mobile-.*\.spec\.ts/,
         },
         {
             // Mobile-first is a PRD NFR ("the whole flow is fully usable on a phone") and one of
