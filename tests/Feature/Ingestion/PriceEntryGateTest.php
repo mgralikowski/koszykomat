@@ -118,7 +118,7 @@ class PriceEntryGateTest extends TestCase
     public function test_it_flags_an_implausible_swing_against_the_last_known_price(): void
     {
         $listing = NetworkProduct::factory()->create();
-        PriceEntry::factory()->for($listing, 'networkProduct')->create([
+        PriceEntry::factory()->forListing($listing)->create([
             'regular_price' => '17.99',
             'promo_type' => PromoType::None,
             'needs_review' => false,
@@ -136,7 +136,7 @@ class PriceEntryGateTest extends TestCase
     public function test_it_allows_a_real_discount_within_the_plausibility_band(): void
     {
         $listing = NetworkProduct::factory()->create();
-        PriceEntry::factory()->for($listing, 'networkProduct')->create([
+        PriceEntry::factory()->forListing($listing)->create([
             'regular_price' => '17.99',
             'promo_type' => PromoType::None,
             'needs_review' => false,

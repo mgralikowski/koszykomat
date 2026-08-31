@@ -31,6 +31,13 @@ Hot-spot scope used for likelihood weighting: `app/`, `resources/views/`,
 `routes/`, `database/`, `tests/` (30 days, 40 commits; excluding `context/`,
 `.claude/`, `vendor/`, `node_modules/`, `public/build/`, lockfiles).
 
+> **Metric caveat (added 2026-08-30 by Phase 1 research).** The per-directory
+> figures in §2's Source column count *file-level changes*, not commits —
+> `git log --since=30.days --oneline -- app/Pricing` returns 4, not 17, and
+> `database/factories` returns 5, not 7. Read them as relative churn signal
+> only; do not re-quote them as commit counts. The corrected figures are
+> carried in the two rows Phase 1 verified.
+
 ## 2. Risk Map
 
 The top failure scenarios this project must protect against, ordered by
@@ -41,24 +48,24 @@ research's job, see §1 principle #3).
 
 | # | Risk (failure scenario) | Impact | Likelihood | Source (evidence — not anchor) |
 |---|---|---|---|---|
-| 1 | A promo mechanic is mispriced on a leaflet shape the hand-seed never contained, and the verdict names the wrong chain | High | High | PRD FR-007 + its 2026-08-30 extension (real data already broke the four-mechanic model once); PRD Business Logic; interview Q1, Q3; hot-spot dir `app/Pricing` (17 commits/30d) |
+| 1 | A promo mechanic is mispriced on a leaflet shape the hand-seed never contained, and the verdict names the wrong chain | High | High | **Confirmed realised by Phase 1 research (2026-08-30)** — a recorded real Lidl offer shape is mispriced today and flips the verdict; PRD FR-007 + its 2026-08-30 extension (real data already broke the four-mechanic model once); PRD Business Logic; interview Q1, Q3; hot-spot dir `app/Pricing` (4 commits/30d — see metric caveat in §1) |
 | 2 | The report omits or misstates the audit trail the verdict rests on — validity window per price, forced-overbuy cost, explicit matched pair — so a correct verdict is unverifiable and a wrong one is undetectable | High | High | PRD FR-008; PRD NFR "Transparentność świeżości danych"; PRD Business Logic; interview Q2, Q4; hot-spot dirs `resources/views/layouts` (4 commits/30d), `resources/views` (4) |
 | 3 | Expired, incomplete or unmatched data still yields a confident verdict instead of "brak danych" | High | Medium | PRD Success Criteria §Guardrails; PRD FR-008, FR-009; roadmap S-04 status `proposed` (seed is about to be swapped for real, sometimes-partial data); hot-spot dir `app/Pricing` (17 commits/30d) |
 | 4 | Extraction persists a plausible-but-wrong row — a pack price read as a unit price, the wrong mechanic type, a misread threshold N — which the validation gate accepts as fact | High | Medium | roadmap F-03 §Risk ("confident-but-wrong numbers … the failure the PRD guardrail exists to catch"); PRD FR-006; interview Q3; hot-spot dirs `app/Ingestion` (7 commits/30d), `app/Ingestion/Drivers` (6) |
 | 5 | A saved basket is reachable by someone who does not own it (abuse lens — authorization/IDOR) | High | Medium | PRD NFR "Prywatność koszyków"; PRD §Access Control; roadmap S-03 §Risk ("authorization scoping is the thing to get right"); hot-spot dirs `app/Http/Controllers` (9 commits/30d), `routes` (6) |
-| 6 | Test fixtures encode a shape production cannot hold, so a green suite proves nothing about production behaviour | Medium | High | `context/foundation/lessons.md` — "Never let related factories each create their own parent" (already happened once; caught by review, not by a test); interview Q2; hot-spot dir `database/factories` (7 commits/30d) |
+| 6 | Test fixtures encode a shape production cannot hold, so a green suite proves nothing about production behaviour | Medium | High | **Confirmed realised by Phase 1 research (2026-08-30)** — the rule is violated in the live suite again, via a factory path the existing fixture test does not cover; `context/foundation/lessons.md` — "Never let related factories each create their own parent" (already happened once; caught by review, not by a test); interview Q2; hot-spot dir `database/factories` (5 commits/30d — see metric caveat in §1) |
 | 7 | The basket accepts a quantity the domain cannot price honestly (zero, negative, absurd) and computes a verdict from it anyway (abuse lens — untrusted input / server-side validation parity) | Medium | Medium | PRD FR-003 (quantity optional in the UI, default 1); PRD Business Logic (conditional promos priced off the actual quantity); hot-spot dir `app/Http/Controllers` (9 commits/30d) |
 
 ### Risk Response Guidance
 
 | Risk | What would prove protection | Must challenge | Context `/10x-research` must ground | Likely cheapest layer | Anti-pattern to avoid |
 |---|---|---|---|---|---|
-| #1 | For a basket and a known real-leaflet offer shape, the computed total equals what a shopper actually pays at the till, forced overbuy included | That the five mechanics are protected because five tests exist; that a total asserted against SQLite decimal handling also holds on MySQL 8.0 | Where quantity enters pricing; how each mechanic's parameters are persisted; which offer shapes real leaflets produced after F-03 | integration (real DB, fixture-driven) | Expected total derived by the same arithmetic as the code under test — the oracle failure; one happy-path total per mechanic and nothing else |
+| #1 | For a basket and a known real-leaflet offer shape, the computed total equals what a shopper actually pays at the till — the shopper charged for exactly the quantity asked for, with the forced overbuy *disclosed* rather than added to the total — and, on a deliberate near-tie, the verdict names the chain the till agrees with | That the five mechanics are protected because five tests exist (they assert a total against a single chain, so none of them can produce a wrong verdict); that a mechanic verified at its seeded threshold stays correct at the thresholds real leaflets print | Where quantity enters pricing; how each mechanic's parameters are persisted; which offer shapes real leaflets produced after F-03 | unit (mechanic × threshold × quantity matrix — the calculator is pure and needs no DB) + integration (two chains, for the verdict) | One happy-path total per mechanic and nothing else; a single threshold value standing in for every threshold; a verdict assertion over a one-chain fixture; adding forced-overbuy units into the expected total (the PRD says disclose, not charge) |
 | #2 | A rendered report states, per price, its from–to validity window; names the forced extra units as a cost; and shows each matched pair's brand/weight difference | That data present on the model means the user sees it; that asserting Polish copy is the same as asserting behaviour | Which template renders the report and what the controller hands it; where validity windows, overbuy cost and pair metadata originate | integration (HTTP feature test asserting rendered content) | Full-page snapshots (excluded — see §7); asserting markup structure instead of the required fact |
 | #3 | With expired, missing or unpaired data the response withholds a winner and says "brak danych" — and abstention is decided for the basket, not swallowed line by line | That a non-empty result means the data was complete; that "now" in a test coincides with a leaflet's live window | Expiry semantics on price rows; what "unmatched" means at comparison time; how an abstaining line propagates to the basket verdict | integration + time travel (`travelTo`) | Happy-path only; asserting that the abstention branch exists without asserting that a verdict is actually withheld |
 | #4 | A parser output that is wrong but well-formed is rejected or flagged for review rather than persisted as a priceable fact | That the gate passing means the number is right; that model confidence is evidence of correctness | The gate's accept/reject/flag contract; provenance columns on price rows; which recorded real leaflet fragments can serve as fixtures | hermetic (stubbed acquirer / vision client) + recorded fixtures | Live calls to chain sites or a vision API inside the suite; mocking the gate itself instead of feeding it bad input |
 | #5 | Every route that reads, re-compares, renames or deletes a saved basket refuses a non-owner outright — and never discloses another account's basket contents | That one privacy test on one route covers the whole resource; that being authenticated implies owning the record | The full inventory of routes touching a saved basket; what the existing privacy coverage actually asserts today | integration (HTTP) | Testing only the list/index route; asserting a redirect happened without asserting nothing was disclosed |
-| #6 | A default factory row is a shape production can hold — chain, leaflet and price agree — and a test fails if it is not | That a passing suite implies valid fixtures | How parents are derived across the price/promo factories; which invariants no composite key can express | integration (real DB constraints) | Re-deriving each factory's own logic inside its assertion |
+| #6 | A factory row is a shape production can hold — chain, leaflet and price agree, and the values fit the production column types — and a test fails if it is not | That a passing suite implies valid fixtures (it does not — the suite is green today on rows that violate the rule); that covering the default row covers the factory (the `->for()` path escapes the derivation); that SQLite enforces what MySQL 8.0 enforces | How parents are derived across the price/promo factories; which invariants no composite key can express; which row shapes SQLite accepts and MySQL 8.0 rejects | integration (real DB constraints) — plus one narrow lane against MySQL 8.0, which is the only layer that can see range/type violations | Re-deriving each factory's own logic inside its assertion; covering only the default `create()` path and not the states or the `->for()` override |
 | #7 | Out-of-domain quantities are rejected at the request boundary with a Polish validation message, and no verdict is computed from them | That the UI default of 1 protects the server | Where quantity is validated versus where it is consumed; whether the session basket and the persisted basket share that boundary | integration (HTTP) | Testing the form widget rather than the request boundary |
 
 ## 3. Phased Rollout
@@ -69,7 +76,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Verdict correctness on real shapes | Prove the till-total for every promo mechanic on the offer shapes real leaflets actually produce, on fixtures that cannot encode an impossible row | #1, #6 | integration | change opened | `context/changes/testing-verdict-correctness/` |
+| 1 | Verdict correctness on real shapes | Prove the till-total for every promo mechanic on the offer shapes real leaflets actually produce, on fixtures that cannot encode an impossible row | #1, #6 | unit + integration | implementing | `context/changes/testing-verdict-correctness/` |
 | 2 | Report as the user reads it | Prove the report states the facts that make the verdict auditable: validity window per price, forced-overbuy cost, explicit matched pair | #2 | integration (HTTP content) | not started | — |
 | 3 | Honest abstention | Prove "brak danych" wins over a guess when data is expired, incomplete or unpaired | #3 | integration + time travel | not started | — |
 | 4 | Account boundary and input contract | Prove owner-only access on every saved-basket route, and that the server rejects quantities the domain cannot price | #5, #7 | integration (HTTP) | not started | — |
@@ -104,11 +111,25 @@ The classic test base for this project. AI-native tools (if any) carry a
 | AI-native | none | — | No phase justified one under cost × signal |
 
 **MySQL/SQLite divergence.** The whole suite runs on SQLite `:memory:` while
-production runs MySQL 8.0 (`CLAUDE.md` hard constraints). Monetary and
-decimal assertions can therefore pass locally and differ in production. This
-is carried as a "must challenge" line on Risk #1 rather than as its own risk
-row: a second MySQL test lane costs more than it returns at MVP scale.
-Re-evaluate if a rounding defect ever reaches production.
+production runs MySQL 8.0 (`CLAUDE.md` hard constraints).
+
+*Revised 2026-08-30 by Phase 1 research, which measured this on both engines
+rather than reasoning about it.* The **arithmetic** half of this worry is
+disproved: no money arithmetic is pushed to the database, `App\Pricing\Money`
+computes with BCMath on decimal strings at an explicit scale, and the
+`decimal:2` cast normalises SQLite's float back to the same string MySQL
+stores — every probed value agreed after casting. A basket total asserted on
+SQLite does hold on MySQL, so this is no longer a "must challenge" line on
+Risk #1.
+
+The **constraint** half is real and moved to Risk #6. SQLite's schema grammar
+drops precision and scale, so it silently accepts rows MySQL 8.0 in strict
+mode rejects outright (measured: a threshold above the column's integer range,
+and a price above the decimal column's range — both stored by SQLite, both
+`SQLSTATE 22003` on MySQL). Since the ingestion path deliberately writes raw
+parser output into those columns, a fixture can encode a row production cannot
+hold and the suite stays green. That is Risk #6 exactly, and a narrow MySQL
+lane is the only layer that sees it — see §7.
 
 **Stack grounding tools (current session):**
 - Docs: Context7 (`/websites/laravel_13_x`) — verified that `Queue::fake`, console-command assertions and time-travel helpers are current in Laravel 13.x; checked: 2026-08-30
@@ -195,10 +216,15 @@ contributors should respect these unless the underlying assumption changes.
   report *states a required fact* (§3 Phase 2) is a different thing and is
   in scope. Re-evaluate only if a rendering regression ever reaches
   production undetected. (Source: Phase 2 interview Q5.)
-- **A second MySQL test lane** — the suite stays on SQLite `:memory:`;
-  divergence is carried as a challenge on Risk #1 instead. Re-evaluate if a
-  decimal or collation defect reaches production. (Source: §4 divergence
-  note.)
+- **A second MySQL test lane for the whole suite** — the suite stays on
+  SQLite `:memory:`. *Narrowed 2026-08-30 by Phase 1 research:* the original
+  reason (decimal divergence on Risk #1) was measured and disproved, but a
+  real constraint divergence was found on Risk #6, and the ddev `db` container
+  already runs MySQL 8.0 — so the cost of a lane is a connection override, not
+  new infrastructure. The exclusion now covers only the *whole suite*; one
+  narrow fixture-integrity class may run against MySQL, because nothing else
+  can catch a fixture row production would reject. (Source: §4 divergence
+  note, as revised.)
 - **A nightly-refresh scheduler test** — no schedule is wired yet (roadmap
   S-04 is `proposed`); testing it now would mean inventing the code under
   test. Re-evaluate when S-04 lands. (Source: Phase 3 challenger pass.)

@@ -7,6 +7,7 @@ use App\Models\Leaflet;
 use App\Models\NetworkProduct;
 use App\Models\PriceEntry;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use LogicException;
 
 /**
  * @extends Factory<PriceEntry>
@@ -40,6 +41,51 @@ class PriceEntryFactory extends Factory
     }
 
     /**
+     * Refuse to hand back a row whose leaflet and listing belong to different chains.
+     *
+     * definition() derives the listing's chain from the leaflet, which protects the default path
+     * only. A relationship override — `->for($listing, 'networkProduct')` — replaces that closure
+     * and leaves `leaflet_id` pointing at a freshly built Leaflet with a chain of its own, which
+     * silently reopens the very shape lessons.md forbids. No composite foreign key guards it today,
+     * so the factory guards it here: a fixture that cannot exist in production must fail loudly at
+     * the point of creation rather than quietly underpinning a green assertion.
+     *
+     * Use forListing() to attach a price to an existing listing.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (PriceEntry $entry): void {
+            $leafletNetwork = $entry->leaflet->network_id;
+            $listingNetwork = $entry->networkProduct->network_id;
+
+            if ($leafletNetwork !== $listingNetwork) {
+                throw new LogicException(sprintf(
+                    'PriceEntry fixture is cross-chain: leaflet #%d belongs to network #%d but listing #%d belongs to network #%d. '
+                    .'Use PriceEntry::factory()->forListing($listing) instead of ->for($listing, \'networkProduct\').',
+                    $entry->leaflet_id,
+                    $leafletNetwork,
+                    $entry->network_product_id,
+                    $listingNetwork,
+                ));
+            }
+        });
+    }
+
+    /**
+     * Attach a price to an existing listing, keeping the leaflet in that listing's chain.
+     *
+     * This is the supported way to pin the listing side. Overriding the relationship directly
+     * leaves the leaflet in a chain of its own and trips the configure() guard.
+     */
+    public function forListing(NetworkProduct $listing): static
+    {
+        return $this->state(fn (): array => [
+            'network_product_id' => $listing->id,
+            'leaflet_id' => Leaflet::factory()->for($listing->network),
+        ]);
+    }
+
+    /**
      * A simple discounted unit price.
      */
     public function simple(string $promoPrice = '7.99'): static
@@ -54,26 +100,33 @@ class PriceEntryFactory extends Factory
 
     /**
      * Buy one, get the second free — the second item costs 0.00.
+     *
+     * The threshold is a parameter because real leaflets do not stop at two: Lidl prints
+     * "2+1 gratis", which the PDF parser reads as a three-item group. A state hard-coded to 2
+     * cannot express the shape most of the leaflet is actually in.
      */
-    public function onePlusOne(): static
+    public function onePlusOne(int $requiredQuantity = 2): static
     {
         return $this->state(fn (): array => [
             'promo_type' => PromoType::OnePlusOne,
             'promo_price' => null,
-            'required_quantity' => 2,
+            'required_quantity' => $requiredQuantity,
             'second_item_price' => '0.00',
         ]);
     }
 
     /**
      * Second item for a fixed amount — a złoty or a grosz.
+     *
+     * Threshold parameterised for the same reason as onePlusOne(): "Trzeci, najtańszy za grosz"
+     * is a three-item group, not a pair.
      */
-    public function secondForFixed(string $secondItemPrice = '1.00'): static
+    public function secondForFixed(string $secondItemPrice = '1.00', int $requiredQuantity = 2): static
     {
         return $this->state(fn (): array => [
             'promo_type' => PromoType::SecondForFixed,
             'promo_price' => null,
-            'required_quantity' => 2,
+            'required_quantity' => $requiredQuantity,
             'second_item_price' => $secondItemPrice,
         ]);
     }
