@@ -402,27 +402,27 @@ Record the patterns so the next contributor reaches for them, and correct the tw
 
 #### Automated
 
-- [x] 2.1 `composer test` passes — every green-lane case
-- [x] 2.2 `composer test:all` fails only in `known-defect`, matching research §A.3
-- [x] 2.3 Each failing case reports independently with threshold and quantity
-- [x] 2.4 `composer lint` passes
+- [x] 2.1 `composer test` passes — every green-lane case — 1406163
+- [x] 2.2 `composer test:all` fails only in `known-defect`, matching research §A.3 — 1406163
+- [x] 2.3 Each failing case reports independently with threshold and quantity — 1406163
+- [x] 2.4 `composer lint` passes — 1406163
 
 #### Manual
 
-- [x] 2.5 Three expected values spot-checked against leaflet or PRD text
-- [x] 2.6 A failing diff reads as engine-vs-till without opening source
+- [x] 2.5 Three expected values spot-checked against leaflet or PRD text — 1406163
+- [x] 2.6 A failing diff reads as engine-vs-till without opening source — 1406163
 
 ### Phase 3: Verdict on deliberate near-ties (integration)
 
 #### Automated
 
-- [ ] 3.1 `composer test` passes — pivot and tie cases
-- [ ] 3.2 `composer test:all` shows the real-flip case failing as measured
-- [ ] 3.3 `composer lint` passes
+- [x] 3.1 `composer test` passes — pivot and tie cases
+- [x] 3.2 `composer test:all` shows the real-flip case failing as measured
+- [x] 3.3 `composer lint` passes
 
 #### Manual
 
-- [ ] 3.4 The pivot case's two quantities genuinely flip the winner
+- [x] 3.4 The pivot case's two quantities genuinely flip the winner
 
 ### Phase 4: Fixture integrity — coherence and production-holdable shapes
 
