@@ -36,6 +36,7 @@ class IngestLeaflets extends Command
 
         $rows = [];
         $flaggedTotal = 0;
+        $failures = [];
 
         foreach ($chains as $chain) {
             $this->info("Ingesting {$chain} …");
@@ -47,6 +48,10 @@ class IngestLeaflets extends Command
 
             foreach ($summary->notes as $note) {
                 $this->warn("  {$chain}: {$note}");
+            }
+
+            foreach ($summary->failures as $failure) {
+                $failures[] = "{$chain}: {$failure}";
             }
         }
 
@@ -67,7 +72,38 @@ class IngestLeaflets extends Command
             $this->reportDiskSpace($assets);
         }
 
+        // Housekeeping above still runs on a failed refresh — expired assets are worth pruning
+        // whether or not new ones arrived — but the run does not get to call itself a success.
+        if ($failures !== []) {
+            return $this->reportFailure($failures);
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Report a refresh that did not refresh anything.
+     *
+     * This exit code is the whole alarm. The production cron (deploy/SERVER-SETUP.md §7) ends in
+     * `>> /dev/null 2>&1`, so every line printed above is discarded; the scheduler's
+     * `emailOutputOnFailure` and any exit-code monitor are what remain, and both read this. Before
+     * it existed, a chain whose drivers all crashed printed a warning into /dev/null and returned
+     * SUCCESS — the refresh looked healthy for as long as nobody noticed the prices had stopped
+     * moving, which is the one failure the PRD guardrail cannot cover from the data side.
+     *
+     * @param  list<string>  $failures
+     */
+    private function reportFailure(array $failures): int
+    {
+        $this->newLine();
+
+        foreach ($failures as $failure) {
+            $this->error($failure);
+        }
+
+        $this->error('Refresh incomplete — the prices these chains serve are now as old as their last good run.');
+
+        return self::FAILURE;
     }
 
     /**

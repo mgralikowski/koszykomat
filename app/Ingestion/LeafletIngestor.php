@@ -37,16 +37,25 @@ final readonly class LeafletIngestor
         $config = config("leaflets.chains.{$networkSlug}");
 
         if (! is_array($config)) {
-            return IngestionSummary::empty($networkSlug)->withNote("no chain configured as '{$networkSlug}'");
+            // A slug nothing answers to is a typo in the cron entry or in config/leaflets.php, and it
+            // will keep ingesting nothing every night until someone reads it. That is a failure, not
+            // a note.
+            return IngestionSummary::empty($networkSlug)
+                ->withFailures(["no chain configured as '{$networkSlug}' — check the cron entry against config/leaflets.php"]);
         }
 
-        $flyers = $this->firstSuccess(
+        $discovery = $this->firstSuccess(
             $config['discoverers'] ?? [],
             fn (Discoverer $driver): array => $driver->discover(),
         );
 
+        /** @var list<Flyer> $flyers */
+        $flyers = $discovery->items;
+
         if ($flyers === []) {
-            return IngestionSummary::empty($networkSlug)->withNote('discovery returned no leaflet');
+            return IngestionSummary::empty($networkSlug)
+                ->withNote('discovery returned no leaflet')
+                ->withFailures($discovery->failures);
         }
 
         $summary = IngestionSummary::empty($networkSlug);
@@ -65,10 +74,15 @@ final readonly class LeafletIngestor
             fn (Acquirer $driver): bool => $driver->canHandle($flyer),
         ));
 
-        $assets = $this->firstSuccess($acquirers, fn (Acquirer $driver): array => $driver->acquire($flyer));
+        $acquired = $this->firstSuccess($acquirers, fn (Acquirer $driver): array => $driver->acquire($flyer));
+
+        /** @var list<Asset> $assets */
+        $assets = $acquired->items;
 
         if ($assets === []) {
-            return IngestionSummary::empty($flyer->networkSlug)->withNote('nothing could be downloaded');
+            return IngestionSummary::empty($flyer->networkSlug)
+                ->withNote('nothing could be downloaded')
+                ->withFailures($acquired->failures);
         }
 
         $kinds = array_unique(array_map(fn (Asset $asset): string => $asset->kind, $assets));
@@ -78,9 +92,12 @@ final readonly class LeafletIngestor
             fn (Parser $driver): bool => array_intersect($driver->accepts(), $kinds) !== [],
         ));
 
-        $offers = $this->firstSuccess($parsers, fn (Parser $driver): array => $driver->parse($assets));
+        $parsed = $this->firstSuccess($parsers, fn (Parser $driver): array => $driver->parse($assets));
 
-        return $this->persist($flyer, $offers, $dryRun);
+        /** @var list<Offer> $offers */
+        $offers = $parsed->items;
+
+        return $this->persist($flyer, $offers, $dryRun)->withFailures($parsed->failures);
     }
 
     /**
@@ -96,8 +113,10 @@ final readonly class LeafletIngestor
         $network = Network::query()->where('slug', $flyer->networkSlug)->first();
 
         if ($network === null) {
+            // Parsing worked and the rows have nowhere to go: the seed never ran, or the slug was
+            // renamed on one side only. Nothing about the next run fixes itself.
             return IngestionSummary::empty($flyer->networkSlug)
-                ->withNote("network '{$flyer->networkSlug}' is not in the database")
+                ->withFailures(["network '{$flyer->networkSlug}' is not in the database — nothing can be written"])
                 ->withCounts($parsed, 0, 0, 0);
         }
 
@@ -230,11 +249,18 @@ final readonly class LeafletIngestor
      * Try each driver until one returns a non-empty result. A driver that throws is logged and the
      * next one gets its turn — that is the entire point of listing more than one.
      *
+     * The catch stays; what changed is that it no longer ends the story. A crash a later driver
+     * covered for is logged and forgotten, but when the whole list is exhausted the reasons come
+     * back with the empty result, so the caller can tell "every driver died" apart from "there was
+     * genuinely nothing to fetch". Swallowing that difference is what let a dead nightly refresh
+     * report success to cron.
+     *
      * @param  list<class-string>|list<object>  $drivers
-     * @return list<mixed>
      */
-    private function firstSuccess(array $drivers, callable $run): array
+    private function firstSuccess(array $drivers, callable $run): StageOutcome
     {
+        $failures = [];
+
         foreach ($drivers as $driver) {
             $instance = is_string($driver) ? app($driver) : $driver;
 
@@ -242,17 +268,19 @@ final readonly class LeafletIngestor
                 $result = $run($instance);
 
                 if ($result !== []) {
-                    return $result;
+                    return new StageOutcome($result);
                 }
             } catch (\Throwable $e) {
                 Log::warning('Ingestion driver failed', [
                     'driver' => $instance::class,
                     'error' => $e->getMessage(),
                 ]);
+
+                $failures[] = class_basename($instance).' failed: '.$e->getMessage();
             }
         }
 
-        return [];
+        return new StageOutcome([], $failures);
     }
 
     public function pruneAssets(): int
